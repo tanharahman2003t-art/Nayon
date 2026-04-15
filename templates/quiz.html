@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quiz</title>
+</head>
+<body>
+    <h2>{{ question["question"] }}</h2>
+
+    <form method="POST">
+        {% for option in question["options"] %}
+            <input type="radio" name="answer" value="{{ option }}"> {{ option }} <br>
+        {% endfor %}
+        <button type="submit">Next</button>
+    </form>
+</body>
+</html>
