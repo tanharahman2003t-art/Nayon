@@ -150,3 +150,24 @@ button {
 
 </body>
 </html>
+<form method="POST" id="quizForm">
+{% for option in question.options %}
+<label class="option 
+{% if show_result %}
+    {% if option == correct %} correct
+    {% elif option == selected %} wrong
+    {% endif %}
+{% endif %}
+">
+    <input type="radio" name="answer" value="{{ option }}" hidden>
+
+    <div class="circle">
+        {{ ['A','B','C','D'][loop.index0] }}
+    </div>
+
+    {{ option }}
+</label>
+{% endfor %}
+
+<button type="submit" id="btn">Next Question</button>
+</form>
