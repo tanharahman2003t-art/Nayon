@@ -1,10 +1,107 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Quiz App</title>
+    <meta charset="UTF-8">
+    <title>Quiz Master</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f6fb;
+            text-align: center;
+            margin: 0;
+        }
+
+        .container {
+            padding: 40px 20px;
+        }
+
+        .badge {
+            background: #dcdcff;
+            color: #6c63ff;
+            padding: 8px 20px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        h1 {
+            color: #6c63ff;
+            font-size: 36px;
+        }
+
+        p {
+            color: #666;
+            max-width: 500px;
+            margin: 10px auto 30px;
+        }
+
+        .cards {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            width: 120px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        .card h2 {
+            color: #6c63ff;
+            margin: 0;
+        }
+
+        .btn {
+            background: #6c63ff;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+    </style>
 </head>
 <body>
-    <h1>Welcome to Quiz</h1>
-    <a href="/start">Start Quiz</a>
+
+<div class="container">
+    <h2>✏️ Quiz Master <small style="color:#999;">| developed by Nayon</small></h2>
+
+    <div class="badge">GENERAL KNOWLEDGE</div>
+
+    <h1>Think You Know It All?</h1>
+
+    <p>
+        Take on {{ total }} questions across Science, Geography, History, Art, and more.
+        Prove your knowledge and see how you rank!
+    </p>
+
+    <div class="cards">
+        <div class="card">
+            <h2>{{ total }}</h2>
+            <p>QUESTIONS</p>
+        </div>
+        <div class="card">
+            <h2>6</h2>
+            <p>CATEGORIES</p>
+        </div>
+        <div class="card">
+            <h2>4</h2>
+            <p>CHOICES</p>
+        </div>
+    </div>
+
+    <a href="/start" class="btn">Start Quiz</a>
+</div>
+
 </body>
 </html>
