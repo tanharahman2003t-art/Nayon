@@ -2,24 +2,66 @@
 <html>
 <head>
     <title>Quiz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6fb;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 400px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        h2 {
+            color: #6c63ff;
+        }
+
+        .option {
+            margin: 10px 0;
+            text-align: left;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            border: none;
+            background: #6c63ff;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #574fd6;
+        }
+    </style>
 </head>
-<body style="text-align:center; font-family:Arial;">
+<body>
 
-<h2>Question {{ qno + 1 }}</h2>
+<div class="card">
+    <h2>Question {{ qno + 1 }}</h2>
+    <p><strong>{{ question.question }}</strong></p>
 
-<form method="POST">
-    <h3>{{ question["question"] }}</h3>
+    <form method="POST">
+        {% for option in question.options %}
+            <div class="option">
+                <input type="radio" name="answer" value="{{ option }}" required>
+                {{ option }}
+            </div>
+        {% endfor %}
 
-    {% for option in question["options"] %}
-        <div>
-            <input type="radio" name="answer" value="{{ option }}" required>
-            {{ option }}
-        </div>
-    {% endfor %}
-
-    <br>
-    <button type="submit">Next</button>
-</form>
+        <button type="submit">Next</button>
+    </form>
+</div>
 
 </body>
 </html>
