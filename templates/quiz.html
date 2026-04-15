@@ -82,7 +82,25 @@ body {
     border-color: #6c63ff;
 }
 
-/* circle */
+/* SELECT EFFECT */
+.option input:checked + .circle {
+    border-color: #6c63ff;
+}
+
+.option input:checked ~ span {
+    font-weight: bold;
+}
+
+.option input:checked {
+    accent-color: #6c63ff;
+}
+
+.option.selected {
+    border-color: #6c63ff;
+    background: #f0f2ff;
+}
+
+/* Circle */
 .circle {
     width: 35px;
     height: 35px;
@@ -95,20 +113,17 @@ body {
     font-weight: bold;
 }
 
-/* Correct / Wrong */
-.correct {
-    background: #d4edda;
-    border-color: green !important;
-}
-
-.wrong {
-    background: #f8d7da;
-    border-color: red !important;
-}
-
-/* Button hidden */
+/* Button */
 button {
-    display: none;
+    width: 100%;
+    padding: 15px;
+    margin-top: 15px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #6c63ff, #8f94fb);
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
 }
 </style>
 </head>
@@ -136,50 +151,34 @@ button {
         </div>
 
         <form method="POST" id="quizForm">
+
             {% for option in question.options %}
-            <label class="option" onclick="selectOption(this, '{{ option }}', '{{ question.answer }}')">
-                <input type="radio" name="answer" value="{{ option }}" hidden>
-                
+            <label class="option">
+                <input type="radio" name="answer" value="{{ option }}" required>
+
                 <div class="circle">
                     {{ ['A','B','C','D'][loop.index0] }}
                 </div>
 
-                {{ option }}
+                <span>{{ option }}</span>
             </label>
             {% endfor %}
 
-            <button type="submit" id="submitBtn">Next</button>
+            <button type="submit">Next Question</button>
+
         </form>
     </div>
 
 </div>
 
 <script>
-function selectOption(element, selected, correct) {
-
-    // disable multiple click
-    let options = document.querySelectorAll('.option');
-    options.forEach(opt => opt.style.pointerEvents = "none");
-
-    // check answer
-    if(selected === correct){
-        element.classList.add("correct");
-    } else {
-        element.classList.add("wrong");
-
-        // correct option highlight
-        options.forEach(opt => {
-            if(opt.innerText.trim().includes(correct)){
-                opt.classList.add("correct");
-            }
-        });
-    }
-
-    // auto next after 1 sec
-    setTimeout(() => {
-        document.getElementById("submitBtn").click();
-    }, 1000);
-}
+// highlight selected option
+document.querySelectorAll(".option").forEach(opt => {
+    opt.addEventListener("click", () => {
+        document.querySelectorAll(".option").forEach(o => o.classList.remove("selected"));
+        opt.classList.add("selected");
+    });
+});
 </script>
 
 </body>
