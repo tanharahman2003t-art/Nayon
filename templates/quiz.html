@@ -1,86 +1,152 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Quiz</title>
-<style>
-body { font-family: Arial; background:#f4f6fb; display:flex; justify-content:center; align-items:center; height:100vh; }
 
-.card {
-    background:white;
-    padding:30px;
-    border-radius:15px;
-    width:400px;
-    text-align:center;
-    box-shadow:0 10px 25px rgba(0,0,0,0.1);
+<style>
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #f5f6fa;
+    margin: 0;
 }
 
+/* Header */
+.header {
+    padding: 15px;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+/* Container */
+.container {
+    padding: 20px;
+}
+
+/* Top row */
+.top {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.badge {
+    background: #e3e6ff;
+    padding: 5px 12px;
+    border-radius: 20px;
+    color: #6c63ff;
+}
+
+/* Progress bar */
 .progress {
-    height:10px;
-    background:#ddd;
-    border-radius:10px;
-    margin-bottom:15px;
+    height: 6px;
+    background: #ddd;
+    border-radius: 10px;
+    margin-bottom: 20px;
 }
 .progress-bar {
-    height:100%;
-    background:#6c63ff;
-    width:{{ progress }}%;
-    border-radius:10px;
+    height: 100%;
+    width: {{ progress }}%;
+    background: #6c63ff;
+    border-radius: 10px;
 }
 
-.timer {
-    color:red;
-    font-weight:bold;
-    margin-bottom:10px;
+/* Card */
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
 }
 
+/* Question */
+.question {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+/* Options */
+.option {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    margin-bottom: 12px;
+    border: 2px solid #eee;
+    border-radius: 15px;
+    cursor: pointer;
+}
+
+.option:hover {
+    border-color: #6c63ff;
+}
+
+.circle {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    border: 2px solid #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    font-weight: bold;
+}
+
+/* Button */
 button {
-    margin-top:15px;
-    padding:10px 20px;
-    background:#6c63ff;
-    color:white;
-    border:none;
-    border-radius:8px;
+    width: 100%;
+    padding: 15px;
+    margin-top: 15px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #6c63ff, #8f94fb);
+    color: white;
+    font-size: 16px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="card">
+<div class="header">
+    Quiz Master | developed by Nayon
+</div>
+
+<div class="container">
+
+    <div class="top">
+        <div class="badge">{{ question.category }}</div>
+        <div>{{ qno + 1 }} / {{ total }}</div>
+    </div>
+
     <div class="progress">
         <div class="progress-bar"></div>
     </div>
 
-    <div class="timer">Time left: <span id="time">10</span>s</div>
+    <div class="card">
+        <div class="question">
+            {{ question.question }}
+        </div>
 
-    <h3>Question {{ qno + 1 }} / {{ total }}</h3>
-    <p>{{ question.question }}</p>
+        <form method="POST">
+            {% for option in question.options %}
+            <label class="option">
+                <input type="radio" name="answer" value="{{ option }}" required hidden>
+                
+                <div class="circle">
+                    {{ ['A','B','C','D'][loop.index0] }}
+                </div>
 
-    <form method="POST" id="quizForm">
-        {% for option in question.options %}
-            <div>
-                <input type="radio" name="answer" value="{{ option }}" required> {{ option }}
-            </div>
-        {% endfor %}
+                {{ option }}
+            </label>
+            {% endfor %}
 
-        <button type="submit">Next</button>
-    </form>
+            <button type="submit">Next Question</button>
+        </form>
+    </div>
+
 </div>
-
-<script>
-let time = 10;
-let timer = document.getElementById("time");
-
-let interval = setInterval(() => {
-    time--;
-    timer.innerText = time;
-
-    if(time <= 0){
-        clearInterval(interval);
-        document.getElementById("quizForm").submit();
-    }
-}, 1000);
-</script>
 
 </body>
 </html>
