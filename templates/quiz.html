@@ -3,14 +3,23 @@
 <head>
     <title>Quiz</title>
 </head>
-<body>
-    <h2>{{ question["question"] }}</h2>
+<body style="text-align:center; font-family:Arial;">
 
-    <form method="POST">
-        {% for option in question["options"] %}
-            <input type="radio" name="answer" value="{{ option }}"> {{ option }} <br>
-        {% endfor %}
-        <button type="submit">Next</button>
-    </form>
+<h2>Question {{ qno + 1 }}</h2>
+
+<form method="POST">
+    <h3>{{ question["question"] }}</h3>
+
+    {% for option in question["options"] %}
+        <div>
+            <input type="radio" name="answer" value="{{ option }}" required>
+            {{ option }}
+        </div>
+    {% endfor %}
+
+    <br>
+    <button type="submit">Next</button>
+</form>
+
 </body>
 </html>
