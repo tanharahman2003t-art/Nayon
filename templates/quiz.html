@@ -7,23 +7,27 @@
 <style>
 body {
     font-family: 'Segoe UI', sans-serif;
-    background: #f5f6fa;
+    background: linear-gradient(135deg, #6c63ff, #8f94fb);
     margin: 0;
-}
-
-/* Header */
-.header {
-    padding: 15px;
-    font-weight: bold;
-    font-size: 20px;
 }
 
 /* Container */
 .container {
-    padding: 20px;
+    max-width: 500px;
+    margin: 40px auto;
+    background: white;
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
 }
 
-/* Top row */
+/* Header */
+.header {
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+/* Progress */
 .top {
     display: flex;
     justify-content: space-between;
@@ -32,31 +36,24 @@ body {
 
 .badge {
     background: #e3e6ff;
+    color: #6c63ff;
     padding: 5px 12px;
     border-radius: 20px;
-    color: #6c63ff;
+    font-size: 14px;
 }
 
-/* Progress bar */
 .progress {
     height: 6px;
     background: #ddd;
     border-radius: 10px;
     margin-bottom: 20px;
 }
+
 .progress-bar {
     height: 100%;
     width: {{ progress }}%;
     background: #6c63ff;
     border-radius: 10px;
-}
-
-/* Card */
-.card {
-    background: white;
-    padding: 20px;
-    border-radius: 20px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
 }
 
 /* Question */
@@ -82,22 +79,8 @@ body {
     border-color: #6c63ff;
 }
 
-/* SELECT EFFECT */
-.option input:checked + .circle {
-    border-color: #6c63ff;
-}
-
-.option input:checked ~ span {
-    font-weight: bold;
-}
-
-.option input:checked {
-    accent-color: #6c63ff;
-}
-
-.option.selected {
-    border-color: #6c63ff;
-    background: #f0f2ff;
+.option input {
+    display: none;
 }
 
 /* Circle */
@@ -113,6 +96,17 @@ body {
     font-weight: bold;
 }
 
+/* Selected */
+.option input:checked + .circle {
+    border-color: #6c63ff;
+    background: #6c63ff;
+    color: white;
+}
+
+.option input:checked ~ span {
+    font-weight: bold;
+}
+
 /* Button */
 button {
     width: 100%;
@@ -124,62 +118,55 @@ button {
     color: white;
     font-size: 16px;
     cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    opacity: 0.9;
 }
 </style>
 </head>
 
 <body>
 
+<div class="container">
+
 <div class="header">
     Quiz Master | developed by Nayon
 </div>
 
-<div class="container">
-
-    <div class="top">
-        <div class="badge">{{ question.category }}</div>
-        <div>{{ qno + 1 }} / {{ total }}</div>
-    </div>
-
-    <div class="progress">
-        <div class="progress-bar"></div>
-    </div>
-
-    <div class="card">
-        <div class="question">
-            {{ question.question }}
-        </div>
-
-        <form method="POST" id="quizForm">
-
-            {% for option in question.options %}
-            <label class="option">
-                <input type="radio" name="answer" value="{{ option }}" required>
-
-                <div class="circle">
-                    {{ ['A','B','C','D'][loop.index0] }}
-                </div>
-
-                <span>{{ option }}</span>
-            </label>
-            {% endfor %}
-
-            <button type="submit">Next Question</button>
-
-        </form>
-    </div>
-
+<div class="top">
+    <div class="badge">{{ question.category }}</div>
+    <div>{{ qno + 1 }} / {{ total }}</div>
 </div>
 
-<script>
-// highlight selected option
-document.querySelectorAll(".option").forEach(opt => {
-    opt.addEventListener("click", () => {
-        document.querySelectorAll(".option").forEach(o => o.classList.remove("selected"));
-        opt.classList.add("selected");
-    });
-});
-</script>
+<div class="progress">
+    <div class="progress-bar"></div>
+</div>
+
+<div class="question">
+    {{ question.question }}
+</div>
+
+<form method="POST">
+
+{% for option in question.options %}
+<label class="option">
+    <input type="radio" name="answer" value="{{ option }}" required>
+
+    <div class="circle">
+        {{ ['A','B','C','D'][loop.index0] }}
+    </div>
+
+    <span>{{ option }}</span>
+</label>
+{% endfor %}
+
+<button type="submit">Next Question</button>
+
+</form>
+
+</div>
 
 </body>
 </html>
