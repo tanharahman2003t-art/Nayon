@@ -1,47 +1,141 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Result</title>
-<style>
-body { font-family: Arial; background:#6c63ff; color:white; padding:30px; }
 
-.card {
-    background:white;
-    color:black;
-    padding:20px;
-    border-radius:15px;
-    max-width:600px;
-    margin:auto;
+<style>
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #6c63ff, #8f94fb);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
 }
 
-.correct { color:green; }
-.wrong { color:red; }
+/* Card */
+.card {
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    width: 350px;
+    text-align: center;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+    animation: fadeIn 1s ease;
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from {opacity:0; transform:translateY(30px);}
+    to {opacity:1; transform:translateY(0);}
+}
+
+/* Score Circle */
+.circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 10px solid #eee;
+    position: relative;
+    margin: 20px auto;
+}
+
+.circle span {
+    position: absolute;
+    top: 35%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 22px;
+    font-weight: bold;
+}
+
+/* Animated bar */
+.progress-ring {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: rotate(-90deg);
+}
+
+svg {
+    width: 120px;
+    height: 120px;
+}
+
+circle {
+    fill: none;
+    stroke-width: 10;
+    stroke-linecap: round;
+}
+
+.bg {
+    stroke: #eee;
+}
+
+.progress {
+    stroke: #6c63ff;
+    stroke-dasharray: 339;
+    stroke-dashoffset: 339;
+    animation: progressAnim 1.5s ease forwards;
+}
+
+/* Animate percentage */
+@keyframes progressAnim {
+    to {
+        stroke-dashoffset: calc(339 - (339 * {{ percentage }} / 100));
+    }
+}
+
+/* Grade */
+.grade {
+    font-size: 18px;
+    margin: 10px 0;
+    color: #6c63ff;
+}
+
+/* Button */
+button {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #6c63ff, #8f94fb);
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 15px;
+}
+
+button:hover {
+    opacity: 0.9;
+}
 </style>
 </head>
 
 <body>
 
 <div class="card">
-    <h2>Your Score: {{ score }} / {{ total }}</h2>
-    <h3>{{ percentage }}%</h3>
 
-    <hr>
+    <h2>Your Score</h2>
 
-    <h3>Answer Review</h3>
+    <!-- Animated Circle -->
+    <div class="circle">
+        <svg class="progress-ring">
+            <circle class="bg" cx="60" cy="60" r="54"></circle>
+            <circle class="progress" cx="60" cy="60" r="54"></circle>
+        </svg>
+        <span>{{ percentage }}%</span>
+    </div>
 
-    {% for a in answers %}
-        <p>
-            <b>{{ a.question }}</b><br>
-            Your Answer: 
-            <span class="{{ 'correct' if a.is_correct else 'wrong' }}">
-                {{ a.selected }}
-            </span><br>
-            Correct Answer: {{ a.correct }}
-        </p>
-        <hr>
-    {% endfor %}
+    <h3>{{ score }} / {{ total }}</h3>
 
-    <a href="/"><button>Play Again</button></a>
+    <div class="grade">{{ grade }}</div>
+
+    <a href="/start">
+        <button>Play Again</button>
+    </a>
+
 </div>
 
 </body>
