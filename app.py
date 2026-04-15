@@ -147,22 +147,40 @@ def quiz():
         return redirect(url_for("start"))
 
     current = session["current"]
+    total = len(QUESTIONS)
 
-    if current >= len(QUESTIONS):
+    if current >= total:
         return redirect(url_for("result"))
 
     question = QUESTIONS[current]
 
     if request.method == "POST":
         selected = request.form.get("answer")
+        correct = question["answer"]
 
-        if selected == question["answer"]:
+        is_correct = selected == correct
+
+        if is_correct:
             session["score"] += 1
+
+        # save answers (review er jonno)
+        session["answers"] = session.get("answers", []) + [{
+            "question": question["question"],
+            "selected": selected,
+            "correct": correct,
+            "is_correct": is_correct,
+        }]
 
         session["current"] += 1
         return redirect(url_for("quiz"))
 
-    return render_template("quiz.html", question=question, qno=current)
+    return render_template(
+        "quiz.html",
+        question=question,
+        qno=current,
+        total=total,
+        progress=int((current / total) * 100)
+    )
 
 
 @app.route("/result")
