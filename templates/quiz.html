@@ -75,12 +75,14 @@ body {
     border: 2px solid #eee;
     border-radius: 15px;
     cursor: pointer;
+    transition: 0.3s;
 }
 
 .option:hover {
     border-color: #6c63ff;
 }
 
+/* circle */
 .circle {
     width: 35px;
     height: 35px;
@@ -93,16 +95,20 @@ body {
     font-weight: bold;
 }
 
-/* Button */
+/* Correct / Wrong */
+.correct {
+    background: #d4edda;
+    border-color: green !important;
+}
+
+.wrong {
+    background: #f8d7da;
+    border-color: red !important;
+}
+
+/* Button hidden */
 button {
-    width: 100%;
-    padding: 15px;
-    margin-top: 15px;
-    border: none;
-    border-radius: 12px;
-    background: linear-gradient(135deg, #6c63ff, #8f94fb);
-    color: white;
-    font-size: 16px;
+    display: none;
 }
 </style>
 </head>
@@ -129,10 +135,10 @@ button {
             {{ question.question }}
         </div>
 
-        <form method="POST">
+        <form method="POST" id="quizForm">
             {% for option in question.options %}
-            <label class="option">
-                <input type="radio" name="answer" value="{{ option }}" required hidden>
+            <label class="option" onclick="selectOption(this, '{{ option }}', '{{ question.answer }}')">
+                <input type="radio" name="answer" value="{{ option }}" hidden>
                 
                 <div class="circle">
                     {{ ['A','B','C','D'][loop.index0] }}
@@ -142,11 +148,39 @@ button {
             </label>
             {% endfor %}
 
-            <button type="submit">Next Question</button>
+            <button type="submit" id="submitBtn">Next</button>
         </form>
     </div>
 
 </div>
+
+<script>
+function selectOption(element, selected, correct) {
+
+    // disable multiple click
+    let options = document.querySelectorAll('.option');
+    options.forEach(opt => opt.style.pointerEvents = "none");
+
+    // check answer
+    if(selected === correct){
+        element.classList.add("correct");
+    } else {
+        element.classList.add("wrong");
+
+        // correct option highlight
+        options.forEach(opt => {
+            if(opt.innerText.trim().includes(correct)){
+                opt.classList.add("correct");
+            }
+        });
+    }
+
+    // auto next after 1 sec
+    setTimeout(() => {
+        document.getElementById("submitBtn").click();
+    }, 1000);
+}
+</script>
 
 </body>
 </html>
