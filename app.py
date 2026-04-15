@@ -4,7 +4,7 @@ from flask import Flask, render_template, request, session, redirect, url_for
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "quiz-secret-key-2024")
 
-QUESTIONS = [
+QUESTIONS = QUESTIONS = [
     {
         "question": "Who is GOAT of Footbal?",
         "options": ["Messi", "Lm10", "Leo", "Leo Messi" ],
@@ -118,6 +118,12 @@ QUESTIONS = [
     "options": ["Barcelona", "Real Madrid", "PSG", "Juventus"],
     "answer": "Barcelona",
     "category": "Football"
+},
+    {
+    "question": "Which player has scored in the most different UEFA Champions League seasons?",
+    "options": ["Cristiano Ronaldo", "Lionel Messi", "Karim Benzema", "Robert Lewandowski"],
+    "answer": "Cristiano Ronaldo",
+    "category": "Football"
 }
 ]
 
@@ -132,52 +138,31 @@ def start():
     session.clear()
     session["score"] = 0
     session["current"] = 0
-    session["answers"] = []
     return redirect(url_for("quiz"))
 
 
 @app.route("/quiz", methods=["GET", "POST"])
 def quiz():
     if "current" not in session:
-        return redirect(url_for("index"))
+        return redirect(url_for("start"))
 
     current = session["current"]
-    total = len(QUESTIONS)
 
-    if request.method == "POST":
-        selected = request.form.get("answer")
-        question = QUESTIONS[current]
-        correct = question["answer"]
-        is_correct = selected == correct
-
-        if is_correct:
-            session["score"] += 1
-
-        session["answers"] = session.get("answers", []) + [{
-            "question": question["question"],
-            "selected": selected,
-            "correct": correct,
-            "is_correct": is_correct,
-            "category": question["category"]
-        }]
-
-        session["current"] = current + 1
-
-        if session["current"] >= total:
-            return redirect(url_for("result"))
-        return redirect(url_for("quiz"))
-
-    if current >= total:
+    if current >= len(QUESTIONS):
         return redirect(url_for("result"))
 
     question = QUESTIONS[current]
-    return render_template(
-        "quiz.html",
-        question=question,
-        current=current + 1,
-        total=total,
-        progress=int((current / total) * 100)
-    )
+
+    if request.method == "POST":
+        selected = request.form.get("answer")
+
+        if selected == question["answer"]:
+            session["score"] += 1
+
+        session["current"] += 1
+        return redirect(url_for("quiz"))
+
+    return render_template("quiz.html", question=question, qno=current)
 
 
 @app.route("/result")
@@ -187,33 +172,16 @@ def result():
 
     score = session["score"]
     total = len(QUESTIONS)
-    answers = session.get("answers", [])
     percentage = int((score / total) * 100)
-
-    if percentage >= 90:
-        grade = "Excellent!"
-        grade_class = "grade-excellent"
-    elif percentage >= 70:
-        grade = "Great job!"
-        grade_class = "grade-great"
-    elif percentage >= 50:
-        grade = "Good effort!"
-        grade_class = "grade-good"
-    else:
-        grade = "Keep practicing!"
-        grade_class = "grade-poor"
 
     return render_template(
         "result.html",
         score=score,
         total=total,
-        percentage=percentage,
-        grade=grade,
-        grade_class=grade_class,
-        answers=answers
+        percentage=percentage
     )
 
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=False)
+    app.run(host="0.0.0.0", port=port)
