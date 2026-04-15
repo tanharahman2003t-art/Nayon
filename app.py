@@ -4,129 +4,128 @@ from flask import Flask, render_template, request, session, redirect, url_for
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "quiz-secret-key-2024")
 
-QUESTIONS = QUESTIONS = [
+QUESTIONS = [
     {
         "question": "Who is GOAT of Footbal?",
-        "options": ["Messi", "Lm10", "Leo", "Leo Messi" ],
+        "options": ["Lm10", "Leo", "Messi", "Leo Messi"],
         "answer": ["Messi", "Lm10", "Leo", "Leo Messi" ],
         "category": "Sports"
     },
     {
         "question": "Who is the father of Real Mardrid?",
-        "options": ["Messi", "Raphinha", "Lamin Yamal" , "Rice" ],
+        "options": ["Raphinha", "Rice", "Messi", "Lamin Yamal"],
         "answer": "Messi",
         "category": "Football"
     },
-{
-    "question": "Who is the best All-Rounder in cricket history?",
-    "options": ["Shakib Al Hasan", "Jacques Kallis", "Kapil Dev", "Imran Khan"],
-    "answer": "Shakib Al Hasan",
-    "category": "Cricket"
-},
-{
-    "question": "Which country won the ICC World Cup 2019?",
-    "options": ["England", "Australia", "New Zealand", "South Africa"],
-    "answer": "England",
-    "category": "Cricket"
-},
-{
-    "question": "Who has the highest runs in ODI cricket?",
-    "options": ["Sachin Tendulkar", "Ricky Ponting", "Kumar Sangakkara", "Brian Lara"],
-    "answer": "Sachin Tendulkar",
-    "category": "Cricket"
-},
-{
-    "question": "Who is the fastest bowler in cricket history?",
-    "options": ["Shoaib Akhtar", "Brett Lee", "Mitchell Starc", "Wasim Akram"],
-    "answer": "Shoaib Akhtar",
-    "category": "Cricket"
-},
-{
-    "question": "Which team has won the most ICC World Cups?",
-    "options": ["Australia", "West Indies", "England", "Pakistan"],
-    "answer": "Australia",
-    "category": "Cricket"
-},
-{
-    "question": "Which country won FIFA World Cup 2022?",
-    "options": ["Argentina", "France", "Brazil", "Germany"],
-    "answer": "Argentina",
-    "category": "Football"
-},
-{
-    "question": "Who has the most Ballon d'Or?",
-    "options": ["Messi", "Zidane", "Ronaldinho", "Kaka"],
-    "answer": "Messi",
-    "category": "Football"
-},
-{
-    "question": "Which club is known as Red Devils?",
-    "options": ["Manchester United", "Liverpool", "Chelsea", "Arsenal"],
-    "answer": "Manchester United",
-    "category": "Football"
-},
-{
-    "question": "Which club has the most Champions League titles?",
-    "options": ["Real Madrid", "Barcelona", "Bayern Munich", "Liverpool"],
-    "answer": "Real Madrid",
-    "category": "Football"
-},
-{
-    "question": "Who is known as Brazilian magician?",
-    "options": ["Ronaldinho", "Kaka", "Neymar", "Ronaldo Nazario"],
-    "answer": "Ronaldinho",
-    "category": "Football"
-},
-{
-    "question": "Which country is famous for Samba football?",
-    "options": ["Brazil", "Argentina", "Spain", "Portugal"],
-    "answer": "Brazil",
-    "category": "Football"
-},
-{
-    "question": "Who won Golden Boot in World Cup 2018?",
-    "options": ["Mbappe", "Kane", "Griezmann", "Modric"],
-    "answer": "Kane",
-    "category": "Football"
-},
-{
-    "question": "Who is the best captain in cricket history?",
-    "options": ["MS Dhoni", "Ricky Ponting", "Graeme Smith", "Clive Lloyd"],
-    "answer": "MS Dhoni",
-    "category": "Cricket"
-},
-{
-    "question": "Which player is called Mr. 360 in cricket?",
-    "options": ["AB de Villiers", "Steve Smith", "Buttler", "Maxwell"],
-    "answer": "AB de Villiers",
-    "category": "Cricket"
-},
-{
-    "question": "Which country invented cricket?",
-    "options": ["England", "Australia", "South Africa", "Pakistan"],
-    "answer": "England",
-    "category": "Cricket"
-},
-{
-    "question": "Who is the greatest football playmaker?",
-    "options": ["Messi", "Xavi", "Iniesta", "Modric"],
-    "answer": "Messi",
-    "category": "Football"
-},
-{
-    "question": "Which team is known as Blaugrana?",
-    "options": ["Barcelona", "Real Madrid", "PSG", "Juventus"],
-    "answer": "Barcelona",
-    "category": "Football"
-},
     {
-    "question": "Which player has scored in the most different UEFA Champions League seasons?",
-    "options": ["Cristiano Ronaldo", "Lionel Messi", "Karim Benzema", "Robert Lewandowski"],
-    "answer": "Cristiano Ronaldo",
-    "category": "Football"
-}
+        "question": "Who is the best All-Rounder in cricket history?",
+        "options": ["Kapil Dev", "Shakib Al Hasan", "Imran Khan", "Jacques Kallis"],
+        "answer": "Shakib Al Hasan",
+        "category": "Cricket"
+    },
+    {
+        "question": "Which country won the ICC World Cup 2019?",
+        "options": ["New Zealand", "South Africa", "England", "Australia"],
+        "answer": "England",
+        "category": "Cricket"
+    },
+    {
+        "question": "Who has the highest runs in ODI cricket?",
+        "options": ["Ricky Ponting", "Brian Lara", "Sachin Tendulkar", "Kumar Sangakkara"],
+        "answer": "Sachin Tendulkar",
+        "category": "Cricket"
+    },
+    {
+        "question": "Who is the fastest bowler in cricket history?",
+        "options": ["Brett Lee", "Wasim Akram", "Mitchell Starc", "Shoaib Akhtar"],
+        "answer": "Shoaib Akhtar",
+        "category": "Cricket"
+    },
+    {
+        "question": "Which team has won the most ICC World Cups?",
+        "options": ["Pakistan", "Australia", "England", "West Indies"],
+        "answer": "Australia",
+        "category": "Cricket"
+    },
+    {
+        "question": "Which country won FIFA World Cup 2022?",
+        "options": ["France", "Brazil", "Argentina", "Germany"],
+        "answer": "Argentina",
+        "category": "Football"
+    },
+    {
+        "question": "Who has the most Ballon d'Or?",
+        "options": ["Zidane", "Messi", "Kaka", "Ronaldinho"],
+        "answer": "Messi",
+        "category": "Football"
+    },
+    {
+        "question": "Which club is known as Red Devils?",
+        "options": ["Liverpool", "Chelsea", "Manchester United", "Arsenal"],
+        "answer": "Manchester United",
+        "category": "Football"
+    },
+    {
+        "question": "Which club has the most Champions League titles?",
+        "options": ["Bayern Munich", "Liverpool", "Real Madrid", "Barcelona"],
+        "answer": "Real Madrid",
+        "category": "Football"
+    },
+    {
+        "question": "Who is known as Brazilian magician?",
+        "options": ["Kaka", "Ronaldinho", "Ronaldo Nazario", "Neymar"],
+        "answer": "Ronaldinho",
+        "category": "Football"
+    },
+    {
+        "question": "Which country is famous for Samba football?",
+        "options": ["Spain", "Brazil", "Portugal", "Argentina"],
+        "answer": "Brazil",
+        "category": "Football"
+    },
+    {
+        "question": "Who won Golden Boot in World Cup 2018?",
+        "options": ["Griezmann", "Modric", "Kane", "Mbappe"],
+        "answer": "Kane",
+        "category": "Football"
+    },
+    {
+        "question": "Who is the best captain in cricket history?",
+        "options": ["Ricky Ponting", "Clive Lloyd", "MS Dhoni", "Graeme Smith"],
+        "answer": "MS Dhoni",
+        "category": "Cricket"
+    },
+    {
+        "question": "Which player is called Mr. 360 in cricket?",
+        "options": ["Steve Smith", "Maxwell", "AB de Villiers", "Buttler"],
+        "answer": "AB de Villiers",
+        "category": "Cricket"
+    },
+    {
+        "question": "Which country invented cricket?",
+        "options": ["Australia", "Pakistan", "England", "South Africa"],
+        "answer": "England",
+        "category": "Cricket"
+    },
+    {
+        "question": "Who is the greatest football playmaker?",
+        "options": ["Xavi", "Messi", "Modric", "Iniesta"],
+        "answer": "Messi",
+        "category": "Football"
+    },
+    {
+        "question": "Which team is known as Blaugrana?",
+        "options": ["PSG", "Juventus", "Barcelona", "Real Madrid"],
+        "answer": "Barcelona",
+        "category": "Football"
+    },
+    {
+        "question": "Which player has scored in the most different UEFA Champions League seasons?",
+        "options": ["Karim Benzema", "Cristiano Ronaldo", "Robert Lewandowski", "Lionel Messi"],
+        "answer": "Cristiano Ronaldo",
+        "category": "Football"
+    }
 ]
-
 
 @app.route("/")
 def index():
