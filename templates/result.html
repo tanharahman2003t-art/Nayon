@@ -1,93 +1,47 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Result</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #6c63ff, #8f94fb);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            color: white;
-        }
+<title>Result</title>
+<style>
+body { font-family: Arial; background:#6c63ff; color:white; padding:30px; }
 
-        .card {
-            background: white;
-            color: #333;
-            padding: 40px;
-            border-radius: 20px;
-            width: 400px;
-            text-align: center;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
-        }
+.card {
+    background:white;
+    color:black;
+    padding:20px;
+    border-radius:15px;
+    max-width:600px;
+    margin:auto;
+}
 
-        h1 {
-            color: #6c63ff;
-        }
-
-        .score {
-            font-size: 40px;
-            margin: 20px 0;
-        }
-
-        .percentage {
-            font-size: 20px;
-            margin-bottom: 10px;
-        }
-
-        .grade {
-            font-size: 22px;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
-
-        .excellent { color: green; }
-        .great { color: #4CAF50; }
-        .good { color: orange; }
-        .poor { color: red; }
-
-        button {
-            padding: 10px 20px;
-            border: none;
-            background: #6c63ff;
-            color: white;
-            border-radius: 10px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background: #574fd6;
-        }
-    </style>
+.correct { color:green; }
+.wrong { color:red; }
+</style>
 </head>
+
 <body>
 
 <div class="card">
-    <h1>Quiz Result</h1>
+    <h2>Your Score: {{ score }} / {{ total }}</h2>
+    <h3>{{ percentage }}%</h3>
 
-    <div class="score">
-        {{ score }} / {{ total }}
-    </div>
+    <hr>
 
-    <div class="percentage">
-        {{ percentage }}%
-    </div>
+    <h3>Answer Review</h3>
 
-    <div class="grade 
-        {% if percentage >= 90 %}excellent
-        {% elif percentage >= 70 %}great
-        {% elif percentage >= 50 %}good
-        {% else %}poor
-        {% endif %}
-    ">
-        {{ grade }}
-    </div>
+    {% for a in answers %}
+        <p>
+            <b>{{ a.question }}</b><br>
+            Your Answer: 
+            <span class="{{ 'correct' if a.is_correct else 'wrong' }}">
+                {{ a.selected }}
+            </span><br>
+            Correct Answer: {{ a.correct }}
+        </p>
+        <hr>
+    {% endfor %}
 
-    <form action="/" method="get">
-        <button>Play Again</button>
-    </form>
+    <a href="/"><button>Play Again</button></a>
 </div>
 
 </body>
