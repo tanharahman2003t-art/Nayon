@@ -11,6 +11,7 @@ body {
     margin: 0;
 }
 
+/* Container */
 .container {
     max-width: 500px;
     margin: 40px auto;
@@ -19,6 +20,12 @@ body {
     border-radius: 20px;
 }
 
+/* Question */
+h3 {
+    margin-bottom: 20px;
+}
+
+/* Option */
 .option {
     padding: 15px;
     margin-bottom: 10px;
@@ -28,18 +35,23 @@ body {
     transition: 0.3s;
 }
 
+/* Hover */
 .option:hover {
-    border-color: #6c63ff;
+    border-color: #28a745;
 }
 
+/* Correct */
 .correct {
     background: #e6ffe6;
-    border-color: green;
+    border-color: #28a745;
+    color: #155724;
 }
 
+/* Wrong */
 .wrong {
     background: #ffe6e6;
     border-color: red;
+    color: #721c24;
 }
 </style>
 </head>
@@ -51,41 +63,53 @@ body {
 <h3>{{ question.question }}</h3>
 
 <form id="quizForm" method="POST">
-{% for option in options %}
+
+{% for option in question.options %}
 <div class="option" onclick="selectAnswer(this, '{{ option }}')">
     {{ option }}
 </div>
 {% endfor %}
+
 <input type="hidden" name="answer" id="answerInput">
+
 </form>
 
 </div>
 
 <script>
-const correct = "{{ correct_answer }}";
+
+// Correct answer from backend
+const correct = "{{ question.answer }}";
 
 function selectAnswer(el, value) {
+
     document.getElementById("answerInput").value = value;
 
     const options = document.querySelectorAll(".option");
 
+    // Disable clicking after selection
     options.forEach(opt => opt.style.pointerEvents = "none");
 
-    if (value === correct) {
+    // Check correct or wrong
+    if (value.trim() === correct.trim()) {
         el.classList.add("correct");
     } else {
         el.classList.add("wrong");
+
+        // Highlight correct one
         options.forEach(opt => {
-            if (opt.innerText === correct) {
+            if (opt.innerText.trim() === correct.trim()) {
                 opt.classList.add("correct");
             }
         });
     }
 
+    // Auto submit after 0.8s
     setTimeout(() => {
         document.getElementById("quizForm").submit();
     }, 800);
 }
+
 </script>
 
 </body>
