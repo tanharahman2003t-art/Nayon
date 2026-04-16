@@ -1,4 +1,5 @@
 import os
+import random
 from flask import Flask, render_template, request, session, redirect, url_for
 
 app = Flask(__name__)
@@ -22,108 +23,6 @@ QUESTIONS = [
         "options": ["Kapil Dev", "Shakib Al Hasan", "Imran Khan", "Jacques Kallis"],
         "answer": "Shakib Al Hasan",
         "category": "Cricket"
-    },
-    {
-        "question": "Which country won the ICC World Cup 2019?",
-        "options": ["New Zealand", "South Africa", "England", "Australia"],
-        "answer": "England",
-        "category": "Cricket"
-    },
-    {
-        "question": "Who has the highest runs in ODI cricket?",
-        "options": ["Ricky Ponting", "Brian Lara", "Sachin Tendulkar", "Kumar Sangakkara"],
-        "answer": "Sachin Tendulkar",
-        "category": "Cricket"
-    },
-    {
-        "question": "Who is the fastest bowler in cricket history?",
-        "options": ["Brett Lee", "Wasim Akram", "Mitchell Starc", "Shoaib Akhtar"],
-        "answer": "Shoaib Akhtar",
-        "category": "Cricket"
-    },
-    {
-        "question": "Which team has won the most ICC World Cups?",
-        "options": ["Pakistan", "Australia", "England", "West Indies"],
-        "answer": "Australia",
-        "category": "Cricket"
-    },
-    {
-        "question": "Which country won FIFA World Cup 2022?",
-        "options": ["France", "Brazil", "Argentina", "Germany"],
-        "answer": "Argentina",
-        "category": "Football"
-    },
-    {
-        "question": "Who has the most Ballon d'Or?",
-        "options": ["Zidane", "Messi", "Kaka", "Ronaldinho"],
-        "answer": "Messi",
-        "category": "Football"
-    },
-    {
-        "question": "Which club is known as Red Devils?",
-        "options": ["Liverpool", "Chelsea", "Manchester United", "Arsenal"],
-        "answer": "Manchester United",
-        "category": "Football"
-    },
-    {
-        "question": "Which club has the most Champions League titles?",
-        "options": ["Bayern Munich", "Liverpool", "Real Madrid", "Barcelona"],
-        "answer": "Real Madrid",
-        "category": "Football"
-    },
-    {
-        "question": "Who is known as Brazilian magician?",
-        "options": ["Kaka", "Ronaldinho", "Ronaldo Nazario", "Neymar"],
-        "answer": "Ronaldinho",
-        "category": "Football"
-    },
-    {
-        "question": "Which country is famous for Samba football?",
-        "options": ["Spain", "Brazil", "Portugal", "Argentina"],
-        "answer": "Brazil",
-        "category": "Football"
-    },
-    {
-        "question": "Who won Golden Boot in World Cup 2018?",
-        "options": ["Griezmann", "Modric", "Kane", "Mbappe"],
-        "answer": "Kane",
-        "category": "Football"
-    },
-    {
-        "question": "Who is the best captain in cricket history?",
-        "options": ["Ricky Ponting", "Clive Lloyd", "MS Dhoni", "Graeme Smith"],
-        "answer": "MS Dhoni",
-        "category": "Cricket"
-    },
-    {
-        "question": "Which player is called Mr. 360 in cricket?",
-        "options": ["Steve Smith", "Maxwell", "AB de Villiers", "Buttler"],
-        "answer": "AB de Villiers",
-        "category": "Cricket"
-    },
-    {
-        "question": "Which country invented cricket?",
-        "options": ["Australia", "Pakistan", "England", "South Africa"],
-        "answer": "England",
-        "category": "Cricket"
-    },
-    {
-        "question": "Who is the greatest football playmaker?",
-        "options": ["Xavi", "Messi", "Modric", "Iniesta"],
-        "answer": "Messi",
-        "category": "Football"
-    },
-    {
-        "question": "Which team is known as Blaugrana?",
-        "options": ["PSG", "Juventus", "Barcelona", "Real Madrid"],
-        "answer": "Barcelona",
-        "category": "Football"
-    },
-    {
-        "question": "Which player has scored in the most different UEFA Champions League seasons?",
-        "options": ["Karim Benzema", "Cristiano Ronaldo", "Robert Lewandowski", "Lionel Messi"],
-        "answer": "Cristiano Ronaldo",
-        "category": "Football"
     }
 ]
 
@@ -153,22 +52,16 @@ def quiz():
 
     question = QUESTIONS[current]
 
+    # Shuffle options (safe copy)
+    options = question["options"][:]
+    random.shuffle(options)
+
     if request.method == "POST":
         selected = request.form.get("answer")
         correct = question["answer"]
 
-        is_correct = selected == correct
-
-        if is_correct:
+        if selected == correct:
             session["score"] += 1
-
-        # save answers (review er jonno)
-        session["answers"] = session.get("answers", []) + [{
-            "question": question["question"],
-            "selected": selected,
-            "correct": correct,
-            "is_correct": is_correct,
-        }]
 
         session["current"] += 1
         return redirect(url_for("quiz"))
@@ -176,9 +69,11 @@ def quiz():
     return render_template(
         "quiz.html",
         question=question,
+        options=options,
         qno=current,
         total=total,
-        progress=int((current / total) * 100)
+        progress=int((current / total) * 100),
+        correct_answer=question["answer"]
     )
 
 
@@ -191,11 +86,20 @@ def result():
     total = len(QUESTIONS)
     percentage = int((score / total) * 100)
 
+    # Grade system
+    if percentage >= 80:
+        grade = "🔥 Genius"
+    elif percentage >= 50:
+        grade = "👏 Well Done"
+    else:
+        grade = "💡 Try Again"
+
     return render_template(
         "result.html",
         score=score,
         total=total,
-        percentage=percentage
+        percentage=percentage,
+        grade=grade
     )
 
 
