@@ -127,6 +127,22 @@ QUESTIONS = [
         "category": "Football"
     }
 ]
+# ---------------- LEADERBOARD FUNCTIONS ----------------
+def load_leaderboard():
+    try:
+        with open(LEADERBOARD_FILE, "r") as f:
+            return json.load(f)
+    except:
+        return []
+
+def save_leaderboard(data):
+    try:
+        with open(LEADERBOARD_FILE, "w") as f:
+            json.dump(data, f)
+    except:
+        pass
+
+# ---------------- ROUTES ----------------
 @app.route("/")
 def index():
     return render_template("index.html", total=len(QUESTIONS))
@@ -146,22 +162,18 @@ def quiz():
         return redirect(url_for("start"))
 
     current = session["current"]
-    total = len(QUESTIONS)
 
-    if current >= total:
+    if current >= len(QUESTIONS):
         return redirect(url_for("result"))
 
     question = QUESTIONS[current]
-
-    # Shuffle options (safe copy)
     options = question["options"][:]
     random.shuffle(options)
 
     if request.method == "POST":
         selected = request.form.get("answer")
-        correct = question["answer"]
 
-        if selected == correct:
+        if selected == question["answer"]:
             session["score"] += 1
 
         session["current"] += 1
@@ -172,8 +184,8 @@ def quiz():
         question=question,
         options=options,
         qno=current,
-        total=total,
-        progress=int((current / total) * 100),
+        total=len(QUESTIONS),
+        progress=int((current / len(QUESTIONS)) * 100),
         correct_answer=question["answer"]
     )
 
@@ -220,11 +232,14 @@ def result():
         grade=grade
     )
 
+
 @app.route("/leaderboard")
 def leaderboard():
     data = load_leaderboard()
     return render_template("leaderboard.html", data=data[:10], total=len(QUESTIONS))
-    
+
+
+# ---------------- RUN ----------------
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
