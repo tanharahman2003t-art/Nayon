@@ -1,1 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leaderboard</title>
 
+<style>
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #6c63ff, #8f94fb);
+    margin: 0;
+}
+
+/* Container */
+.container {
+    max-width: 500px;
+    margin: 30px auto;
+    padding: 20px;
+}
+
+/* Title */
+h2 {
+    text-align: center;
+    color: white;
+}
+
+/* Card */
+.board {
+    background: white;
+    border-radius: 20px;
+    padding: 15px;
+    margin-top: 20px;
+}
+
+/* Top 3 Highlight */
+.top1 {
+    background: gold;
+    color: black;
+}
+
+.top2 {
+    background: silver;
+}
+
+.top3 {
+    background: #cd7f32;
+    color: white;
+}
+
+/* Row */
+.row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    background: #f5f6fb;
+    transition: 0.3s;
+}
+
+.row:hover {
+    transform: scale(1.02);
+}
+
+/* Rank */
+.rank {
+    font-weight: bold;
+    width: 50px;
+}
+
+/* Name */
+.name {
+    flex: 1;
+    text-align: left;
+}
+
+/* Score */
+.score {
+    font-weight: bold;
+}
+
+/* Badge */
+.badge {
+    font-size: 12px;
+    padding: 3px 8px;
+    border-radius: 10px;
+    margin-left: 5px;
+    background: #6c63ff;
+    color: white;
+}
+
+/* Button */
+button {
+    margin-top: 20px;
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    background: white;
+    color: #6c63ff;
+    font-weight: bold;
+    cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>🏆 Leaderboard</h2>
+
+<div class="board">
+
+{% for user in data %}
+<div class="row 
+    {% if loop.index == 1 %}top1
+    {% elif loop.index == 2 %}top2
+    {% elif loop.index == 3 %}top3
+    {% endif %}
+">
+
+    <div class="rank">#{{ loop.index }}</div>
+
+    <div class="name">
+        {{ user.name }}
+
+        {% if loop.index == 1 %}
+            <span class="badge">👑 Top</span>
+        {% elif user.score == total %}
+            <span class="badge">💯 Perfect</span>
+        {% endif %}
+    </div>
+
+    <div class="score">
+        {{ user.score }}
+    </div>
+
+</div>
+{% endfor %}
+
+</div>
+
+<a href="/">
+    <button>⬅ Back to Home</button>
+</a>
+
+</div>
+
+</body>
+</html>
