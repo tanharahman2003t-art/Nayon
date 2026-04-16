@@ -11,66 +11,19 @@ body {
     margin: 0;
 }
 
-/* Container */
 .container {
     max-width: 500px;
     margin: 40px auto;
     background: white;
     padding: 25px;
     border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
 }
 
-/* Header */
-.header {
-    font-weight: bold;
-    margin-bottom: 15px;
-}
-
-/* Progress */
-.top {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-}
-
-.badge {
-    background: #e3e6ff;
-    color: #6c63ff;
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 14px;
-}
-
-.progress {
-    height: 6px;
-    background: #ddd;
-    border-radius: 10px;
-    margin-bottom: 20px;
-}
-
-.progress-bar {
-    height: 100%;
-    width: {{ progress }}%;
-    background: #6c63ff;
-    border-radius: 10px;
-}
-
-/* Question */
-.question {
-    font-size: 20px;
-    font-weight: bold;
-    margin-bottom: 20px;
-}
-
-/* Options */
 .option {
-    display: flex;
-    align-items: center;
     padding: 15px;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
     border: 2px solid #eee;
-    border-radius: 15px;
+    border-radius: 12px;
     cursor: pointer;
     transition: 0.3s;
 }
@@ -79,50 +32,14 @@ body {
     border-color: #6c63ff;
 }
 
-.option input {
-    display: none;
+.correct {
+    background: #e6ffe6;
+    border-color: green;
 }
 
-/* Circle */
-.circle {
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
-    border: 2px solid #ccc;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 15px;
-    font-weight: bold;
-}
-
-/* Selected */
-.option input:checked + .circle {
-    border-color: #6c63ff;
-    background: #6c63ff;
-    color: white;
-}
-
-.option input:checked ~ span {
-    font-weight: bold;
-}
-
-/* Button */
-button {
-    width: 100%;
-    padding: 15px;
-    margin-top: 15px;
-    border: none;
-    border-radius: 12px;
-    background: linear-gradient(135deg, #6c63ff, #8f94fb);
-    color: white;
-    font-size: 16px;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-button:hover {
-    opacity: 0.9;
+.wrong {
+    background: #ffe6e6;
+    border-color: red;
 }
 </style>
 </head>
@@ -131,42 +48,45 @@ button:hover {
 
 <div class="container">
 
-<div class="header">
-    Quiz Master | developed by Nayon
+<h3>{{ question.question }}</h3>
+
+<form id="quizForm" method="POST">
+{% for option in options %}
+<div class="option" onclick="selectAnswer(this, '{{ option }}')">
+    {{ option }}
 </div>
-
-<div class="top">
-    <div class="badge">{{ question.category }}</div>
-    <div>{{ qno + 1 }} / {{ total }}</div>
-</div>
-
-<div class="progress">
-    <div class="progress-bar"></div>
-</div>
-
-<div class="question">
-    {{ question.question }}
-</div>
-
-<form method="POST">
-
-{% for option in question.options %}
-<label class="option">
-    <input type="radio" name="answer" value="{{ option }}" required>
-
-    <div class="circle">
-        {{ ['A','B','C','D'][loop.index0] }}
-    </div>
-
-    <span>{{ option }}</span>
-</label>
 {% endfor %}
-
-<button type="submit">Next Question</button>
-
+<input type="hidden" name="answer" id="answerInput">
 </form>
 
 </div>
+
+<script>
+const correct = "{{ correct_answer }}";
+
+function selectAnswer(el, value) {
+    document.getElementById("answerInput").value = value;
+
+    const options = document.querySelectorAll(".option");
+
+    options.forEach(opt => opt.style.pointerEvents = "none");
+
+    if (value === correct) {
+        el.classList.add("correct");
+    } else {
+        el.classList.add("wrong");
+        options.forEach(opt => {
+            if (opt.innerText === correct) {
+                opt.classList.add("correct");
+            }
+        });
+    }
+
+    setTimeout(() => {
+        document.getElementById("quizForm").submit();
+    }, 800);
+}
+</script>
 
 </body>
 </html>
