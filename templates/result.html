@@ -23,13 +23,6 @@ body {
     width: 350px;
     text-align: center;
     box-shadow: 0 15px 40px rgba(0,0,0,0.2);
-    animation: fadeIn 0.8s ease;
-}
-
-/* Animation */
-@keyframes fadeIn {
-    from {opacity:0; transform:translateY(30px);}
-    to {opacity:1; transform:translateY(0);}
 }
 
 /* Circle */
@@ -81,19 +74,11 @@ circle {
 .rank {
     font-size: 22px;
     font-weight: bold;
-    margin-top: 10px;
 }
 
 /* Score */
 .score {
     color: #666;
-    margin-top: 5px;
-}
-
-/* Message */
-.message {
-    margin-top: 10px;
-    font-size: 18px;
 }
 
 /* Input */
@@ -103,10 +88,9 @@ input {
     margin-top: 15px;
     border-radius: 10px;
     border: 1px solid #ddd;
-    outline: none;
 }
 
-/* Buttons */
+/* Button */
 .btn {
     margin-top: 15px;
     padding: 14px;
@@ -119,9 +103,7 @@ input {
     cursor: pointer;
 }
 
-/* Secondary button */
 .btn2 {
-    margin-top: 10px;
     background: #eee;
     color: #333;
 }
@@ -159,23 +141,24 @@ input {
         {{ score }} / {{ total }} correct
     </div>
 
-    <!-- Message -->
-    <div class="message">
-        {% if percentage >= 90 %}
-            Incredible performance!
-        {% elif percentage >= 75 %}
-            Great job!
-        {% elif percentage >= 50 %}
-            Not bad, keep going!
-        {% else %}
-            Practice more, you’ll improve!
-        {% endif %}
-    </div>
+    <!-- Username Show -->
+    {% if session.get('username') %}
+        <p>👤 {{ session.get('username') }}</p>
+    {% endif %}
 
-    <!-- 🔥 NEW: Name + Submit -->
+    <!-- Form -->
     <form method="POST">
-        <input type="text" name="name" placeholder="Enter your name" required>
-        <button type="submit" class="btn">Submit to Leaderboard</button>
+        <input type="text" name="name"
+               placeholder="Enter your name"
+               value="{{ session.get('username', '') }}" required>
+
+        <button type="submit" class="btn">
+            {% if session.get('username') %}
+                Submit Score 🚀
+            {% else %}
+                Save & Submit
+            {% endif %}
+        </button>
     </form>
 
     <!-- Actions -->
@@ -188,18 +171,6 @@ input {
     </a>
 
 </div>
-
-<!-- Sound -->
-<audio id="sound">
-    <source src="https://www.soundjay.com/human/applause-8.mp3" type="audio/mpeg">
-</audio>
-
-<script>
-// Play sound
-window.onload = function() {
-    document.getElementById("sound").play();
-}
-</script>
 
 </body>
 </html>
