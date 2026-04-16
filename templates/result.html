@@ -19,11 +19,11 @@ body {
 .card {
     background: white;
     padding: 30px;
-    border-radius: 20px;
+    border-radius: 25px;
     width: 350px;
     text-align: center;
     box-shadow: 0 15px 40px rgba(0,0,0,0.2);
-    animation: fadeIn 1s ease;
+    animation: fadeIn 0.8s ease;
 }
 
 /* Animation */
@@ -32,36 +32,23 @@ body {
     to {opacity:1; transform:translateY(0);}
 }
 
-/* Score Circle */
+/* Title */
+h2 {
+    margin-bottom: 10px;
+}
+
+/* Circle */
 .circle {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    border: 10px solid #eee;
     position: relative;
+    width: 140px;
+    height: 140px;
     margin: 20px auto;
 }
 
-.circle span {
-    position: absolute;
-    top: 35%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 22px;
-    font-weight: bold;
-}
-
-/* Animated bar */
-.progress-ring {
-    position: absolute;
-    top: 0;
-    left: 0;
-    transform: rotate(-90deg);
-}
-
 svg {
-    width: 120px;
-    height: 120px;
+    width: 140px;
+    height: 140px;
+    transform: rotate(-90deg);
 }
 
 circle {
@@ -76,35 +63,51 @@ circle {
 
 .progress {
     stroke: #6c63ff;
-    stroke-dasharray: 339;
-    stroke-dashoffset: 339;
+    stroke-dasharray: 440;
+    stroke-dashoffset: 440;
     animation: progressAnim 1.5s ease forwards;
 }
 
-/* Animate percentage */
 @keyframes progressAnim {
     to {
-        stroke-dashoffset: calc(339 - (339 * {{ percentage }} / 100));
+        stroke-dashoffset: calc(440 - (440 * {{ percentage }} / 100));
     }
 }
 
-/* Grade */
-.grade {
+/* Percentage text */
+.percent {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 26px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* Score text */
+.score {
     font-size: 18px;
-    margin: 10px 0;
-    color: #6c63ff;
+    color: #666;
+}
+
+/* Dynamic message */
+.message {
+    margin-top: 10px;
+    font-size: 18px;
+    font-weight: bold;
 }
 
 /* Button */
 button {
-    padding: 12px 20px;
+    margin-top: 20px;
+    padding: 14px 25px;
     border: none;
     border-radius: 12px;
     background: linear-gradient(135deg, #6c63ff, #8f94fb);
     color: white;
     font-size: 16px;
     cursor: pointer;
-    margin-top: 15px;
 }
 
 button:hover {
@@ -117,20 +120,30 @@ button:hover {
 
 <div class="card">
 
-    <h2>Your Score</h2>
+    <h2>🎯 Your Result</h2>
 
-    <!-- Animated Circle -->
     <div class="circle">
-        <svg class="progress-ring">
-            <circle class="bg" cx="60" cy="60" r="54"></circle>
-            <circle class="progress" cx="60" cy="60" r="54"></circle>
+        <svg>
+            <circle class="bg" cx="70" cy="70" r="60"></circle>
+            <circle class="progress" cx="70" cy="70" r="60"></circle>
         </svg>
-        <span>{{ percentage }}%</span>
+        <div class="percent">{{ percentage }}%</div>
     </div>
 
-    <h3>{{ score }} / {{ total }}</h3>
+    <div class="score">
+        {{ score }} out of {{ total }} correct
+    </div>
 
-    <div class="grade">{{ grade }}</div>
+    <!-- Dynamic Message -->
+    <div class="message">
+        {% if percentage >= 80 %}
+            🔥 Excellent! You are a genius!
+        {% elif percentage >= 50 %}
+            👏 Good job! Keep improving!
+        {% else %}
+            💡 Keep practicing! You can do better!
+        {% endif %}
+    </div>
 
     <a href="/start">
         <button>Play Again</button>
