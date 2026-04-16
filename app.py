@@ -127,22 +127,22 @@ QUESTIONS = [
         "category": "Football"
     }
 ]
-# ---------------- LEADERBOARD FUNCTIONS ----------------
+# ---------------------------
+# Leaderboard Functions
+# ---------------------------
 def load_leaderboard():
-    try:
-        with open(LEADERBOARD_FILE, "r") as f:
-            return json.load(f)
-    except:
+    if not os.path.exists(LEADERBOARD_FILE):
         return []
+    with open(LEADERBOARD_FILE, "r") as f:
+        return json.load(f)
 
 def save_leaderboard(data):
-    try:
-        with open(LEADERBOARD_FILE, "w") as f:
-            json.dump(data, f)
-    except:
-        pass
+    with open(LEADERBOARD_FILE, "w") as f:
+        json.dump(data, f, indent=4)
 
-# ---------------- ROUTES ----------------
+# ---------------------------
+# Routes
+# ---------------------------
 @app.route("/")
 def index():
     return render_template("index.html", total=len(QUESTIONS))
@@ -162,13 +162,12 @@ def quiz():
         return redirect(url_for("start"))
 
     current = session["current"]
+    total = len(QUESTIONS)
 
-    if current >= len(QUESTIONS):
+    if current >= total:
         return redirect(url_for("result"))
 
     question = QUESTIONS[current]
-    options = question["options"][:]
-    random.shuffle(options)
 
     if request.method == "POST":
         selected = request.form.get("answer")
@@ -182,11 +181,9 @@ def quiz():
     return render_template(
         "quiz.html",
         question=question,
-        options=options,
         qno=current,
-        total=len(QUESTIONS),
-        progress=int((current / len(QUESTIONS)) * 100),
-        correct_answer=question["answer"]
+        total=total,
+        progress=int((current / total) * 100)
     )
 
 
@@ -204,6 +201,8 @@ def result():
         name = request.form.get("name")
 
         if name:
+            session["username"] = name   # ✅ remember username
+
             data = load_leaderboard()
             data.append({
                 "name": name,
@@ -216,30 +215,23 @@ def result():
 
         return redirect(url_for("leaderboard"))
 
-    # Grade
-    if percentage >= 80:
-        grade = "🔥 Genius"
-    elif percentage >= 50:
-        grade = "👏 Well Done"
-    else:
-        grade = "💡 Try Again"
-
     return render_template(
         "result.html",
         score=score,
         total=total,
-        percentage=percentage,
-        grade=grade
+        percentage=percentage
     )
 
 
 @app.route("/leaderboard")
 def leaderboard():
     data = load_leaderboard()
-    return render_template("leaderboard.html", data=data[:10], total=len(QUESTIONS))
+    return render_template("leaderboard.html", data=data[:10])
 
 
-# ---------------- RUN ----------------
+# ---------------------------
+# Run
+# ---------------------------
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
