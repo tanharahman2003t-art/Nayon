@@ -13,6 +13,7 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh;
+    overflow: hidden;
 }
 
 /* Card */
@@ -30,11 +31,6 @@ body {
 @keyframes fadeIn {
     from {opacity:0; transform:translateY(30px);}
     to {opacity:1; transform:translateY(0);}
-}
-
-/* Title */
-h2 {
-    margin-bottom: 10px;
 }
 
 /* Circle */
@@ -82,20 +78,25 @@ circle {
     transform: translate(-50%, -50%);
     font-size: 26px;
     font-weight: bold;
-    color: #333;
 }
 
-/* Score text */
+/* Rank */
+.rank {
+    font-size: 22px;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+/* Score */
 .score {
-    font-size: 18px;
     color: #666;
+    margin-top: 5px;
 }
 
-/* Dynamic message */
+/* Message */
 .message {
     margin-top: 10px;
     font-size: 18px;
-    font-weight: bold;
 }
 
 /* Button */
@@ -110,8 +111,20 @@ button {
     cursor: pointer;
 }
 
-button:hover {
-    opacity: 0.9;
+/* Confetti */
+.confetti {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: red;
+    top: -10px;
+    animation: fall 3s linear infinite;
+}
+
+@keyframes fall {
+    to {
+        transform: translateY(110vh) rotate(360deg);
+    }
 }
 </style>
 </head>
@@ -130,18 +143,33 @@ button:hover {
         <div class="percent">{{ percentage }}%</div>
     </div>
 
-    <div class="score">
-        {{ score }} out of {{ total }} correct
+    <!-- Rank -->
+    <div class="rank">
+        {% if percentage >= 90 %}
+            🏆 Master
+        {% elif percentage >= 75 %}
+            🔥 Pro
+        {% elif percentage >= 50 %}
+            👍 Average
+        {% else %}
+            🐣 Beginner
+        {% endif %}
     </div>
 
-    <!-- Dynamic Message -->
+    <div class="score">
+        {{ score }} / {{ total }} correct
+    </div>
+
+    <!-- Message -->
     <div class="message">
-        {% if percentage >= 80 %}
-            🔥 Excellent! You are a genius!
+        {% if percentage >= 90 %}
+            Incredible performance!
+        {% elif percentage >= 75 %}
+            Great job!
         {% elif percentage >= 50 %}
-            👏 Good job! Keep improving!
+            Not bad, keep going!
         {% else %}
-            💡 Keep practicing! You can do better!
+            Practice more, you’ll improve!
         {% endif %}
     </div>
 
@@ -150,6 +178,28 @@ button:hover {
     </a>
 
 </div>
+
+<!-- Sound -->
+<audio id="sound">
+    <source src="https://www.soundjay.com/human/applause-8.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+// Play sound
+window.onload = function() {
+    document.getElementById("sound").play();
+
+    // Confetti generate
+    for (let i = 0; i < 40; i++) {
+        let conf = document.createElement("div");
+        conf.className = "confetti";
+        conf.style.left = Math.random() * 100 + "vw";
+        conf.style.background = ["red","blue","green","yellow","purple"][Math.floor(Math.random()*5)];
+        conf.style.animationDuration = (2 + Math.random()*3) + "s";
+        document.body.appendChild(conf);
+    }
+}
+</script>
 
 </body>
 </html>
