@@ -1,10 +1,36 @@
 import os
+import json
 import random
 from flask import Flask, render_template, request, session, redirect, url_for
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "quiz-secret-key-2024")
 
+# Leaderboard file
+LEADERBOARD_FILE = "leaderboard.json"
+
+
+# ---------------------------
+# Leaderboard Functions
+# ---------------------------
+def load_leaderboard():
+    try:
+        if not os.path.exists(LEADERBOARD_FILE):
+            return []
+        with open(LEADERBOARD_FILE, "r") as f:
+            return json.load(f)
+    except:
+        return []
+
+
+def save_leaderboard(data):
+    with open(LEADERBOARD_FILE, "w") as f:
+        json.dump(data, f, indent=4)
+
+
+# ---------------------------
+# Questions
+# ---------------------------
 QUESTIONS = [
     {
         "question": "Who is GOAT of Football?",
@@ -127,18 +153,6 @@ QUESTIONS = [
         "category": "Football"
     }
 ]
-# ---------------------------
-# Leaderboard Functions
-# ---------------------------
-def load_leaderboard():
-    if not os.path.exists(LEADERBOARD_FILE):
-        return []
-    with open(LEADERBOARD_FILE, "r") as f:
-        return json.load(f)
-
-def save_leaderboard(data):
-    with open(LEADERBOARD_FILE, "w") as f:
-        json.dump(data, f, indent=4)
 
 # ---------------------------
 # Routes
@@ -169,6 +183,10 @@ def quiz():
 
     question = QUESTIONS[current]
 
+    # Shuffle options (pro feature)
+    options = question["options"].copy()
+    random.shuffle(options)
+
     if request.method == "POST":
         selected = request.form.get("answer")
 
@@ -181,6 +199,7 @@ def quiz():
     return render_template(
         "quiz.html",
         question=question,
+        options=options,
         qno=current,
         total=total,
         progress=int((current / total) * 100)
@@ -196,12 +215,11 @@ def result():
     total = len(QUESTIONS)
     percentage = int((score / total) * 100)
 
-    # Save leaderboard
     if request.method == "POST":
         name = request.form.get("name")
 
         if name:
-            session["username"] = name   # ✅ remember username
+            session["username"] = name
 
             data = load_leaderboard()
             data.append({
