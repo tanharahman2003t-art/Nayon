@@ -203,7 +203,11 @@ def result():
         grade=grade
     )
 
-
+@app.route("/leaderboard")
+def leaderboard():
+    data = load_leaderboard()
+    return render_template("leaderboard.html", data=data[:10], total=len(QUESTIONS))
+    
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
