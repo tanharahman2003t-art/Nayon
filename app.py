@@ -7,8 +7,8 @@ app.secret_key = os.environ.get("SESSION_SECRET", "quiz-secret-key-2024")
 QUESTIONS = [
     {
         "question": "Who is GOAT of Footbal?",
-        "options": ["Lm10", "Leo", "Messi", "Leo Messi"],
-        "answer": ["Messi", "Lm10", "Leo", "Leo Messi" ],
+        "options": ["Kustiyar Ronaldo", "Pele", "Hand of GOD", "Leo Messi"],
+        "answer": "Leo Messi",
         "category": "Sports"
     },
     {
