@@ -178,7 +178,7 @@ def quiz():
     )
 
 
-@app.route("/result")
+@app.route("/result", methods=["GET", "POST"])
 def result():
     if "score" not in session:
         return redirect(url_for("index"))
@@ -187,7 +187,24 @@ def result():
     total = len(QUESTIONS)
     percentage = int((score / total) * 100)
 
-    # Grade system
+    # Save leaderboard
+    if request.method == "POST":
+        name = request.form.get("name")
+
+        if name:
+            data = load_leaderboard()
+            data.append({
+                "name": name,
+                "score": score,
+                "percentage": percentage
+            })
+
+            data = sorted(data, key=lambda x: x["score"], reverse=True)
+            save_leaderboard(data)
+
+        return redirect(url_for("leaderboard"))
+
+    # Grade
     if percentage >= 80:
         grade = "🔥 Genius"
     elif percentage >= 50:
