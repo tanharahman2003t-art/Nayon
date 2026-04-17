@@ -1,44 +1,161 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz Master - Mobile Sound Fix</title>
+    <title>Quiz Master - Pro Live</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #6c63ff, #8f94fb); margin: 0; touch-action: manipulation; }
-        .container { max-width: 500px; margin: 20px auto; background: white; padding: 25px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        .timer-container { width: 100%; background: #eee; height: 10px; border-radius: 5px; margin-bottom: 20px; overflow: hidden; }
-        .timer-bar { height: 100%; background: #ff4757; width: 100%; transition: width 1s linear; }
-        .info { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: bold; color: #666; }
-        .option { padding: 15px; margin-bottom: 12px; border: 2px solid #eee; border-radius: 15px; cursor: pointer; transition: 0.3s; background: white; -webkit-tap-highlight-color: transparent; }
-        .correct { background: #e6ffe6 !important; border-color: #28a745 !important; }
-        .wrong { background: #ffe6e6 !important; border-color: #ff4757 !important; }
-        .btn-start-sound { background: #28a745; color: white; padding: 10px; border: none; border-radius: 10px; margin-bottom: 10px; width: 100%; cursor: pointer; font-weight: bold; }
+        :root {
+            --primary: #6c63ff;
+            --secondary: #ff4757;
+            --success: #2ecc71;
+            --bg: #f4f7fe;
+            --card-bg: #ffffff;
+            --text: #2d3436;
+        }
+
+        [data-theme="dark"] {
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text: #f8fafc;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            transition: 0.3s;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 500px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        /* Timer & Progress Bar */
+        .info-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .timer-box {
+            width: 100%;
+            height: 8px;
+            background: #eee;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 25px;
+        }
+
+        .timer-fill {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            transition: width 1s linear;
+        }
+
+        /* Lifelines */
+        .lifelines {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .life-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 12px;
+            background: rgba(108, 99, 255, 0.1);
+            color: var(--primary);
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .life-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+        /* Question & Options */
+        h3 { font-size: 20px; margin-bottom: 25px; line-height: 1.4; }
+
+        .option {
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            background: var(--bg);
+            border: 2px solid transparent;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-weight: 500;
+        }
+
+        .option:hover { border-color: var(--primary); transform: translateX(5px); }
+
+        .correct { 
+            background: #d1fae5 !important; 
+            border-color: var(--success) !important; 
+            color: #065f46 !important;
+        }
+
+        .wrong { 
+            background: #fee2e2 !important; 
+            border-color: var(--secondary) !important; 
+            color: #991b1b !important;
+        }
+
+        .hidden-option { visibility: hidden; pointer-events: none; }
+
+        #unmuteBtn {
+            position: fixed; top: 10px; left: 50%; transform: translateX(-50%);
+            background: var(--secondary); color: white; padding: 5px 15px;
+            border-radius: 20px; font-size: 12px; cursor: pointer; z-index: 100;
+        }
     </style>
 </head>
 <body>
 
 <audio id="snd_correct" preload="auto">
-    <source src="https://noproblo.dayjo.org/ZeldaSounds/OOT/OOT_Get_SmallItem.wav" type="audio/wav">
+    <source src="https://www.soundjay.com/buttons/sounds/button-37.mp3" type="audio/mpeg">
 </audio>
 <audio id="snd_wrong" preload="auto">
-    <source src="https://noproblo.dayjo.org/ZeldaSounds/OOT/OOT_Bose_Ganon_Laugh2.wav" type="audio/wav">
+    <source src="https://www.soundjay.com/buttons/sounds/button-10.mp3" type="audio/mpeg">
 </audio>
 
-<div class="container">
-    <button class="btn-start-sound" id="unmuteBtn" onclick="enableAudio()">🔊 Tap here if no sound</button>
+<div id="unmuteBtn" onclick="enableAudio()">🔊 Enable Audio & Vibration</div>
 
-    <div class="info">
+<div class="container">
+    <div class="info-bar">
         <span>Question {{ step }}/{{ total }}</span>
-        <span id="timerText">⏱️ 15s</span>
+        <span id="timerText">15s</span>
     </div>
-    <div class="timer-container"><div class="timer-bar" id="progressBar"></div></div>
+    <div class="timer-box"><div class="timer-fill" id="progressBar"></div></div>
+
+    <div class="lifelines">
+        <button id="fiftyBtn" class="life-btn" onclick="useFiftyFifty()">✂️ 50-50</button>
+        <button id="skipBtn" class="life-btn" onclick="useSkip()">⏭️ Skip</button>
+    </div>
 
     <h3>{{ question.question }}</h3>
 
     <form id="quizForm" method="POST">
-        {% for option in options %}
-        <div class="option" onclick="selectAnswer(this, `{{ option }}`)">{{ option }}</div>
-        {% endfor %}
+        <div id="optionsContainer">
+            {% for option in options %}
+            <div class="option" onclick="selectAnswer(this, `{{ option }}`)">{{ option }}</div>
+            {% endfor %}
+        </div>
         <input type="hidden" name="answer" id="answerInput">
     </form>
 </div>
@@ -48,22 +165,32 @@
     let timeLeft = 15;
     let answered = false;
 
+    // Load Theme
+    if (localStorage.getItem('theme') === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+    }
+
     const sCorrect = document.getElementById("snd_correct");
     const sWrong = document.getElementById("snd_wrong");
 
-    // Function to "wake up" audio on mobile
     function enableAudio() {
         sCorrect.play(); sCorrect.pause();
         sWrong.play(); sWrong.pause();
         document.getElementById("unmuteBtn").style.display = "none";
+        // vibration permission check for some browsers
+        if (navigator.vibrate) navigator.vibrate(50);
     }
 
     const timer = setInterval(() => {
         if(!answered) {
             timeLeft--;
-            document.getElementById("timerText").innerText = `⏱️ ${timeLeft}s`;
+            document.getElementById("timerText").innerText = timeLeft + "s";
             document.getElementById("progressBar").style.width = (timeLeft / 15 * 100) + "%";
-            if (timeLeft <= 0) { clearInterval(timer); submitForm("TIMEOUT"); }
+            
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                submitForm("TIMEOUT");
+            }
         }
     }, 1000);
 
@@ -71,19 +198,23 @@
         if(answered) return;
         answered = true;
         
-        // Mobile-er jonno prothom click-e audio context unlock kora
-        enableAudio(); 
+        // Ensure audio is ready
+        enableAudio();
 
         const options = document.querySelectorAll(".option");
         options.forEach(opt => opt.style.pointerEvents = "none");
 
         if (val.trim() === correctAns.trim()) {
+            // Sothik: Short vibration & sound
+            if (navigator.vibrate) navigator.vibrate(100);
             sCorrect.currentTime = 0;
-            sCorrect.play();
+            sCorrect.play().catch(e => {});
             el.classList.add("correct");
         } else {
+            // Bhul: Double pulse vibration & sound
+            if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
             sWrong.currentTime = 0;
-            sWrong.play();
+            sWrong.play().catch(e => {});
             el.classList.add("wrong");
             options.forEach(opt => {
                 if(opt.innerText.trim() === correctAns.trim()) opt.classList.add("correct");
@@ -91,6 +222,22 @@
         }
         
         setTimeout(() => submitForm(val), 1200);
+    }
+
+    function useFiftyFifty() {
+        const options = Array.from(document.querySelectorAll(".option"));
+        let removed = 0;
+        options.forEach(opt => {
+            if (opt.innerText.trim() !== correctAns.trim() && removed < 2) {
+                opt.classList.add("hidden-option");
+                removed++;
+            }
+        });
+        document.getElementById("fiftyBtn").disabled = true;
+    }
+
+    function useSkip() {
+        submitForm("SKIPPED");
     }
 
     function submitForm(val) {
