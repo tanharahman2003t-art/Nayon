@@ -5,37 +5,119 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quiz Master - Home</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f5f6fb; text-align: center; margin: 0; }
-        .container { padding: 50px 20px; max-width: 600px; margin: auto; }
-        .badge { background: #dcdcff; color: #6c63ff; padding: 8px 20px; border-radius: 20px; font-weight: bold; margin-bottom: 15px; display: inline-block; }
-        h1 { color: #333; font-size: 32px; }
-        .user-welcome { color: #6c63ff; font-weight: bold; }
-        .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 30px 0; }
-        .card { background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .card h2 { color: #6c63ff; margin: 5px 0; }
-        .btn-group { display: flex; flex-direction: column; gap: 10px; }
-        .btn { background: #6c63ff; color: white; padding: 15px; border-radius: 12px; text-decoration: none; font-weight: bold; transition: 0.3s; }
-        .btn:hover { background: #5a52e0; transform: translateY(-2px); }
-        .btn-alt { background: white; color: #6c63ff; border: 2px solid #6c63ff; }
+        /* CSS Variables for Dark Mode */
+        :root {
+            --bg-color: #f5f6fb;
+            --card-bg: white;
+            --text-color: #333;
+            --primary: #6c63ff;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #1a1a2e;
+            --card-bg: #16213e;
+            --text-color: #e9ecef;
+        }
+
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-color); color: var(--text-color); margin: 0; transition: 0.3s; }
+        
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed; right: -300px; top: 0; width: 280px; height: 100%;
+            background: var(--card-bg); box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+            transition: 0.4s; z-index: 1000; padding: 20px;
+        }
+        .sidebar.active { right: 0; }
+        
+        .profile-circle {
+            width: 80px; height: 80px; border-radius: 50%; background: #ddd;
+            margin: 10px auto; overflow: hidden; border: 3px solid var(--primary);
+        }
+        .profile-circle img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* General UI */
+        .container { padding: 50px 20px; text-align: center; }
+        .settings-icon { position: absolute; top: 20px; right: 20px; font-size: 30px; cursor: pointer; }
+        .btn { background: var(--primary); color: white; padding: 12px 25px; border-radius: 10px; border:none; cursor:pointer; font-weight:bold; width: 100%; margin-top: 10px; }
+        .input-group { margin-bottom: 15px; text-align: left; }
+        .input-group input { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ddd; box-sizing: border-box; }
+        
+        .dark-mode-toggle { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding: 10px; background: #eee; border-radius: 10px; color: #333; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="badge">QUIZ MASTER v2.0</div>
-        <h1>Welcome, <span class="user-welcome">{{ username }}</span>!</h1>
-        <p>You have 15 seconds for each question. Good luck!</p>
 
-        <div class="cards">
-            <div class="card"><h2>{{ total }}</h2><p>Items</p></div>
-            <div class="card"><h2>15s</h2><p>Timer</p></div>
-            <div class="card"><h2>Live</h2><p>Rank</p></div>
+    <div class="settings-icon" onclick="toggleSidebar()">⚙️</div>
+
+    <div class="sidebar" id="sidebar">
+        <h3 onclick="toggleSidebar()" style="cursor:pointer;">✖ Close</h3>
+        <div class="profile-circle">
+            <img src="{{ url_for('static', filename=session.get('profile_pic', 'default_avatar.png')) }}" id="preview">
         </div>
+        
+        <form action="/update_profile" method="POST" enctype="multipart/form-data">
+            <div class="input-group">
+                <label>Change Name:</label>
+                <input type="text" name="username" value="{{ username }}">
+            </div>
+            <div class="input-group">
+                <label>Change Photo:</label>
+                <input type="file" name="profile_pic" onchange="previewImage(this)">
+            </div>
+            <button type="submit" class="btn">Save Settings</button>
+        </form>
 
-        <div class="btn-group">
-            <a href="/start" class="btn">🚀 Start Quiz Now</a>
-            <a href="/leaderboard" class="btn btn-alt">🏆 View Leaderboard</a>
-            <a href="/logout" style="margin-top:20px; color:#999; text-decoration:none;">Logout</a>
+        <div class="dark-mode-toggle">
+            <span>Dark Mode</span>
+            <input type="checkbox" id="darkModeCheckbox" onchange="toggleDarkMode()">
         </div>
     </div>
+
+    <div class="container">
+        <h1>Welcome, {{ username }}!</h1>
+        <div class="cards">
+            <p>Ready to start the quiz?</p>
+        </div>
+        <a href="/start" style="text-decoration:none;"><button class="btn" style="width:200px">🚀 Start Quiz</button></a>
+    </div>
+
+    <script>
+        // Sidebar Toggle
+        function toggleSidebar() {
+            document.getElementById("sidebar").classList.toggle("active");
+        }
+
+        // Image Preview
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('preview').src = e.target.result;
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // Dark Mode Logic
+        function toggleDarkMode() {
+            const isDark = document.getElementById("darkModeCheckbox").checked;
+            if (isDark) {
+                document.documentElement.setAttribute("data-theme", "dark");
+                localStorage.setItem("theme", "dark");
+            } else {
+                document.documentElement.setAttribute("data-theme", "light");
+                localStorage.setItem("theme", "light");
+            }
+        }
+
+        // Load Theme on Start
+        window.onload = () => {
+            const savedTheme = localStorage.getItem("theme");
+            if (savedTheme === "dark") {
+                document.documentElement.setAttribute("data-theme", "dark");
+                document.getElementById("darkModeCheckbox").checked = true;
+            }
+        };
+    </script>
 </body>
 </html>
