@@ -4,10 +4,12 @@ import random
 from flask import Flask, render_template, request, session, redirect, url_for
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SESSION_SECRET", "quiz-pro-key-2026")
+# Session secure rakhar jonno key
+app.secret_key = os.environ.get("SESSION_SECRET", "quiz-pro-ultra-2026")
 
 LEADERBOARD_FILE = "leaderboard.json"
 
+# Leaderboard data load korar function
 def load_leaderboard():
     if not os.path.exists(LEADERBOARD_FILE):
         return []
@@ -17,6 +19,7 @@ def load_leaderboard():
     except (json.JSONDecodeError, IOError):
         return []
 
+# Leaderboard data save korar function
 def save_leaderboard(data):
     try:
         with open(LEADERBOARD_FILE, "w", encoding="utf-8") as f:
@@ -52,7 +55,7 @@ def login():
     if request.method == "POST":
         name = request.form.get("username", "").strip()
         if name:
-            session.clear()
+            session.clear() # Purono session clear kore notun kore login
             session["username"] = name
             return redirect(url_for("index"))
     return render_template("login.html")
@@ -68,11 +71,15 @@ def start():
     if "username" not in session:
         return redirect(url_for("login"))
     
+    # Quiz shuru hoyar somoy shob initialize kora
     session["score"] = 0
     session["current"] = 0
+    
+    # Question order shuffle kora
     indices = list(range(len(QUESTIONS)))
     random.shuffle(indices)
     session["question_order"] = indices
+    
     return redirect(url_for("quiz"))
 
 @app.route("/quiz", methods=["GET", "POST"])
@@ -83,22 +90,34 @@ def quiz():
     current_step = session["current"]
     total = len(QUESTIONS)
 
+    # Shob question sesh hole result page e jabe
     if current_step >= total:
         return redirect(url_for("result"))
 
     q_idx = session["question_order"][current_step]
     question_data = QUESTIONS[q_idx]
-    display_options = question_data["options"].copy()
-    random.shuffle(display_options)
-
+    
     if request.method == "POST":
         selected_answer = request.form.get("answer")
-        if selected_answer == question_data["answer"]:
-            session["score"] += 1
+        
+        # Jodi skip na kora hoy ebong thik hoy tobe score barbe
+        if selected_answer != "SKIPPED":
+            if selected_answer == question_data["answer"]:
+                session["score"] += 1
+        
+        # Porer question e jaoa
         session["current"] += 1
         return redirect(url_for("quiz"))
 
-    return render_template("quiz.html", question=question_data, options=display_options, total=total, step=current_step + 1)
+    # Options gulo shuffle kora display korar somoy
+    display_options = question_data["options"].copy()
+    random.shuffle(display_options)
+
+    return render_template("quiz.html", 
+                           question=question_data, 
+                           options=display_options, 
+                           total=total, 
+                           step=current_step + 1)
 
 @app.route("/result", methods=["GET", "POST"])
 def result():
@@ -111,13 +130,23 @@ def result():
     username = session.get("username", "Guest")
 
     if request.method == "POST":
+        # Score leaderboard e save kora
         data = load_leaderboard()
-        data.append({"name": username, "score": score, "percentage": percentage})
+        data.append({
+            "name": username, 
+            "score": score, 
+            "percentage": percentage
+        })
+        # Score onujayi sort kora (Boro theke chhoto)
         data = sorted(data, key=lambda x: x["score"], reverse=True)[:10]
         save_leaderboard(data)
         return redirect(url_for("leaderboard"))
 
-    return render_template("result.html", score=score, total=total, percentage=percentage, name=username)
+    return render_template("result.html", 
+                           score=score, 
+                           total=total, 
+                           percentage=percentage, 
+                           name=username)
 
 @app.route("/leaderboard")
 def leaderboard():
@@ -130,4 +159,5 @@ def logout():
     return redirect(url_for("login"))
 
 if __name__ == "__main__":
+    # App run kora
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=True)
