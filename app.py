@@ -4,12 +4,10 @@ import random
 from flask import Flask, render_template, request, session, redirect, url_for
 
 app = Flask(__name__)
-# Secret key টি সেশন ডাটা সুরক্ষিত রাখে
 app.secret_key = os.environ.get("SESSION_SECRET", "quiz-pro-key-2026")
 
 LEADERBOARD_FILE = "leaderboard.json"
 
-# --- ডাটাবেস ফাংশন (JSON) ---
 def load_leaderboard():
     if not os.path.exists(LEADERBOARD_FILE):
         return []
@@ -24,9 +22,8 @@ def save_leaderboard(data):
         with open(LEADERBOARD_FILE, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=4)
     except IOError:
-        print("Error saving leaderboard data.")
+        pass
 
-# --- আপনার সেই ২০টি প্রশ্ন (Full Set) ---
 QUESTIONS = [
     {"question": "Who is GOAT of Football?", "options": ["Kustiyar Ronaldo", "Pele", "Hand of GOD", "Leo Messi"], "answer": "Leo Messi", "category": "Sports"},
     {"question": "Who is the father of Real Madrid?", "options": ["Raphinha", "Rice", "Messi", "Lamin Yamal"], "answer": "Messi", "category": "Football"},
@@ -50,14 +47,12 @@ QUESTIONS = [
     {"question": "Which player has scored in the most Champions League seasons?", "options": ["Karim Benzema", "Cristiano Ronaldo", "Robert Lewandowski", "Lionel Messi"], "answer": "Cristiano Ronaldo", "category": "Football"}
 ]
 
-# --- রুট লজিক ---
-
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
         name = request.form.get("username", "").strip()
         if name:
-            session.clear() # নতুন লগইনের সময় আগের সব সেশন পরিষ্কার করা
+            session.clear()
             session["username"] = name
             return redirect(url_for("index"))
     return render_template("login.html")
@@ -75,11 +70,9 @@ def start():
     
     session["score"] = 0
     session["current"] = 0
-    # প্রশ্নগুলোর ইনডেক্স লিস্ট তৈরি করে সাফল (Shuffle) করা
     indices = list(range(len(QUESTIONS)))
     random.shuffle(indices)
     session["question_order"] = indices
-    
     return redirect(url_for("quiz"))
 
 @app.route("/quiz", methods=["GET", "POST"])
@@ -93,11 +86,8 @@ def quiz():
     if current_step >= total:
         return redirect(url_for("result"))
 
-    # বর্তমান সাফল করা ইনডেক্স অনুযায়ী প্রশ্ন বের করা
     q_idx = session["question_order"][current_step]
     question_data = QUESTIONS[q_idx]
-
-    # অপশনগুলোও সাফল করা
     display_options = question_data["options"].copy()
     random.shuffle(display_options)
 
@@ -105,17 +95,10 @@ def quiz():
         selected_answer = request.form.get("answer")
         if selected_answer == question_data["answer"]:
             session["score"] += 1
-        
         session["current"] += 1
         return redirect(url_for("quiz"))
 
-    return render_template(
-        "quiz.html", 
-        question=question_data, 
-        options=display_options, 
-        total=total, 
-        step=current_step + 1
-    )
+    return render_template("quiz.html", question=question_data, options=display_options, total=total, step=current_step + 1)
 
 @app.route("/result", methods=["GET", "POST"])
 def result():
@@ -129,12 +112,7 @@ def result():
 
     if request.method == "POST":
         data = load_leaderboard()
-        data.append({
-            "name": username,
-            "score": score,
-            "percentage": percentage
-        })
-        # স্কোর অনুযায়ী বড় থেকে ছোট সাজিয়ে টপ ১০ রাখা
+        data.append({"name": username, "score": score, "percentage": percentage})
         data = sorted(data, key=lambda x: x["score"], reverse=True)[:10]
         save_leaderboard(data)
         return redirect(url_for("leaderboard"))
