@@ -2,20 +2,31 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz Master - Live</title>
+    <title>Quiz Master - Pro</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #6c63ff, #8f94fb); margin: 0; }
-        .container { max-width: 500px; margin: 40px auto; background: white; padding: 25px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .container { max-width: 500px; margin: 20px auto; background: white; padding: 25px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); position: relative; }
         .timer-container { width: 100%; background: #eee; height: 10px; border-radius: 5px; margin-bottom: 20px; overflow: hidden; }
         .timer-bar { height: 100%; background: #ff4757; width: 100%; transition: width 1s linear; }
         .info { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: bold; color: #666; }
-        .option { padding: 15px; margin-bottom: 12px; border: 2px solid #eee; border-radius: 15px; cursor: pointer; transition: 0.3s; font-size: 16px; }
+        
+        /* Lifeline Styles */
+        .lifelines { display: flex; gap: 10px; margin-bottom: 20px; justify-content: center; }
+        .life-btn { background: #ff9f43; color: white; border: none; padding: 8px 15px; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 14px; }
+        .life-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+        .option { padding: 15px; margin-bottom: 12px; border: 2px solid #eee; border-radius: 15px; cursor: pointer; transition: 0.3s; font-size: 16px; background: white; }
         .option:hover { border-color: #6c63ff; background: #f9f9ff; }
         .correct { background: #e6ffe6 !important; border-color: #28a745 !important; }
         .wrong { background: #ffe6e6 !important; border-color: #ff4757 !important; }
+        .hidden-option { visibility: hidden; opacity: 0; pointer-events: none; }
     </style>
 </head>
 <body>
+
+<audio id="correctSound" src="https://cdn.pixabay.com/audio/2021/08/04/audio_bb630692f3.mp3"></audio>
+<audio id="wrongSound" src="https://cdn.pixabay.com/audio/2022/03/10/audio_c9725f02f4.mp3"></audio>
+<audio id="tickSound" src="https://www.soundjay.com/clock/sounds/clock-ticking-2.mp3"></audio>
 
 <div class="container">
     <div class="info">
@@ -24,12 +35,19 @@
     </div>
     <div class="timer-container"><div class="timer-bar" id="progressBar"></div></div>
 
-    <h3 style="margin-bottom: 25px;">{{ question.question }}</h3>
+    <div class="lifelines">
+        <button id="fiftyBtn" class="life-btn" onclick="useFiftyFifty()">✂️ 50-50</button>
+        <button id="skipBtn" class="life-btn" onclick="useSkip()">⏭️ Skip</button>
+    </div>
+
+    <h3 id="questionText">{{ question.question }}</h3>
 
     <form id="quizForm" method="POST">
-        {% for option in options %}
-        <div class="option" onclick="selectAnswer(this, `{{ option }}`)">{{ option }}</div>
-        {% endfor %}
+        <div id="optionsContainer">
+            {% for option in options %}
+            <div class="option" onclick="selectAnswer(this, `{{ option }}`)">{{ option }}</div>
+            {% endfor %}
+        </div>
         <input type="hidden" name="answer" id="answerInput">
     </form>
 </div>
@@ -39,12 +57,24 @@
     let timeLeft = 15;
     const progressBar = document.getElementById("progressBar");
     const timerText = document.getElementById("timerText");
+    
+    // Audio objects
+    const sndCorrect = document.getElementById("correctSound");
+    const sndWrong = document.getElementById("wrongSound");
+    const sndTick = document.getElementById("tickSound");
 
+    // Timer Logic
     const timer = setInterval(() => {
         timeLeft--;
         timerText.innerText = `⏱️ ${timeLeft}s`;
         progressBar.style.width = (timeLeft / 15 * 100) + "%";
-        if (timeLeft <= 0) { clearInterval(timer); submitForm("TIMEOUT"); }
+        
+        if(timeLeft <= 5) { sndTick.play(); } // Tick sound in last 5s
+
+        if (timeLeft <= 0) { 
+            clearInterval(timer); 
+            submitForm("TIMEOUT"); 
+        }
     }, 1000);
 
     function selectAnswer(el, val) {
@@ -53,14 +83,37 @@
         options.forEach(opt => opt.style.pointerEvents = "none");
 
         if (val.trim() === correctAns.trim()) {
+            sndCorrect.play();
             el.classList.add("correct");
         } else {
+            sndWrong.play();
             el.classList.add("wrong");
             options.forEach(opt => {
                 if(opt.innerText.trim() === correctAns.trim()) opt.classList.add("correct");
             });
         }
-        setTimeout(() => submitForm(val), 800);
+        setTimeout(() => submitForm(val), 1000);
+    }
+
+    // Lifeline: 50-50
+    function useFiftyFifty() {
+        const options = Array.from(document.querySelectorAll(".option"));
+        let removed = 0;
+        options.forEach(opt => {
+            if (opt.innerText.trim() !== correctAns.trim() && removed < 2) {
+                opt.classList.add("hidden-option");
+                removed++;
+            }
+        });
+        document.getElementById("fiftyBtn").disabled = true;
+        document.getElementById("fiftyBtn").style.background = "#ccc";
+    }
+
+    // Lifeline: Skip
+    function useSkip() {
+        clearInterval(timer);
+        document.getElementById("skipBtn").disabled = true;
+        submitForm("SKIPPED");
     }
 
     function submitForm(val) {
