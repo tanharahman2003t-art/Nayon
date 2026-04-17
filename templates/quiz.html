@@ -2,52 +2,43 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz Master - Sound Fixed</title>
+    <title>Quiz Master - Mobile Sound Fix</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #6c63ff, #8f94fb); margin: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #6c63ff, #8f94fb); margin: 0; touch-action: manipulation; }
         .container { max-width: 500px; margin: 20px auto; background: white; padding: 25px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         .timer-container { width: 100%; background: #eee; height: 10px; border-radius: 5px; margin-bottom: 20px; overflow: hidden; }
         .timer-bar { height: 100%; background: #ff4757; width: 100%; transition: width 1s linear; }
         .info { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: bold; color: #666; }
-        .lifelines { display: flex; gap: 10px; margin-bottom: 20px; justify-content: center; }
-        .life-btn { background: #ff9f43; color: white; border: none; padding: 8px 15px; border-radius: 10px; cursor: pointer; font-weight: bold; }
-        .option { padding: 15px; margin-bottom: 12px; border: 2px solid #eee; border-radius: 15px; cursor: pointer; transition: 0.3s; background: white; }
-        .option:hover { border-color: #6c63ff; background: #f9f9ff; }
+        .option { padding: 15px; margin-bottom: 12px; border: 2px solid #eee; border-radius: 15px; cursor: pointer; transition: 0.3s; background: white; -webkit-tap-highlight-color: transparent; }
         .correct { background: #e6ffe6 !important; border-color: #28a745 !important; }
         .wrong { background: #ffe6e6 !important; border-color: #ff4757 !important; }
-        .hidden-option { visibility: hidden; pointer-events: none; }
+        .btn-start-sound { background: #28a745; color: white; padding: 10px; border: none; border-radius: 10px; margin-bottom: 10px; width: 100%; cursor: pointer; font-weight: bold; }
     </style>
 </head>
-<body onclick="unlockAudio()"> <audio id="snd_correct" preload="auto">
-    <source src="https://www.soundjay.com/buttons/sounds/button-37.mp3" type="audio/mpeg">
+<body>
+
+<audio id="snd_correct" preload="auto">
+    <source src="https://noproblo.dayjo.org/ZeldaSounds/OOT/OOT_Get_SmallItem.wav" type="audio/wav">
 </audio>
 <audio id="snd_wrong" preload="auto">
-    <source src="https://www.soundjay.com/buttons/sounds/button-10.mp3" type="audio/mpeg">
-</audio>
-<audio id="snd_tick" preload="auto">
-    <source src="https://www.soundjay.com/clock/sounds/clock-ticking-2.mp3" type="audio/mpeg">
+    <source src="https://noproblo.dayjo.org/ZeldaSounds/OOT/OOT_Bose_Ganon_Laugh2.wav" type="audio/wav">
 </audio>
 
 <div class="container">
+    <button class="btn-start-sound" id="unmuteBtn" onclick="enableAudio()">🔊 Tap here if no sound</button>
+
     <div class="info">
         <span>Question {{ step }}/{{ total }}</span>
         <span id="timerText">⏱️ 15s</span>
     </div>
     <div class="timer-container"><div class="timer-bar" id="progressBar"></div></div>
 
-    <div class="lifelines">
-        <button id="fiftyBtn" class="life-btn" onclick="useFiftyFifty()">✂️ 50-50</button>
-        <button id="skipBtn" class="life-btn" onclick="useSkip()">⏭️ Skip</button>
-    </div>
-
-    <h3 id="q_text">{{ question.question }}</h3>
+    <h3>{{ question.question }}</h3>
 
     <form id="quizForm" method="POST">
-        <div id="optionsContainer">
-            {% for option in options %}
-            <div class="option" onclick="selectAnswer(this, `{{ option }}`)">{{ option }}</div>
-            {% endfor %}
-        </div>
+        {% for option in options %}
+        <div class="option" onclick="selectAnswer(this, `{{ option }}`)">{{ option }}</div>
+        {% endfor %}
         <input type="hidden" name="answer" id="answerInput">
     </form>
 </div>
@@ -55,52 +46,44 @@
 <script>
     const correctAns = `{{ question.answer }}`;
     let timeLeft = 15;
-    let isPaused = false;
+    let answered = false;
 
-    // Audio Elements
     const sCorrect = document.getElementById("snd_correct");
     const sWrong = document.getElementById("snd_wrong");
-    const sTick = document.getElementById("snd_tick");
 
-    // Audio Unlocker: Chrome/Safari require interaction
-    function unlockAudio() {
+    // Function to "wake up" audio on mobile
+    function enableAudio() {
         sCorrect.play(); sCorrect.pause();
         sWrong.play(); sWrong.pause();
-        sTick.play(); sTick.pause();
+        document.getElementById("unmuteBtn").style.display = "none";
     }
 
     const timer = setInterval(() => {
-        if(!isPaused) {
+        if(!answered) {
             timeLeft--;
             document.getElementById("timerText").innerText = `⏱️ ${timeLeft}s`;
             document.getElementById("progressBar").style.width = (timeLeft / 15 * 100) + "%";
-            
-            if(timeLeft <= 3 && timeLeft > 0) {
-                sTick.currentTime = 0;
-                sTick.play().catch(e => {}); 
-            }
-
-            if (timeLeft <= 0) {
-                clearInterval(timer);
-                submitForm("TIMEOUT");
-            }
+            if (timeLeft <= 0) { clearInterval(timer); submitForm("TIMEOUT"); }
         }
     }, 1000);
 
     function selectAnswer(el, val) {
-        if(isPaused) return;
-        isPaused = true; 
+        if(answered) return;
+        answered = true;
         
+        // Mobile-er jonno prothom click-e audio context unlock kora
+        enableAudio(); 
+
         const options = document.querySelectorAll(".option");
         options.forEach(opt => opt.style.pointerEvents = "none");
 
         if (val.trim() === correctAns.trim()) {
             sCorrect.currentTime = 0;
-            sCorrect.play().catch(e => console.log("Blocked"));
+            sCorrect.play();
             el.classList.add("correct");
         } else {
             sWrong.currentTime = 0;
-            sWrong.play().catch(e => console.log("Blocked"));
+            sWrong.play();
             el.classList.add("wrong");
             options.forEach(opt => {
                 if(opt.innerText.trim() === correctAns.trim()) opt.classList.add("correct");
@@ -108,23 +91,6 @@
         }
         
         setTimeout(() => submitForm(val), 1200);
-    }
-
-    function useFiftyFifty() {
-        const options = Array.from(document.querySelectorAll(".option"));
-        let count = 0;
-        options.forEach(opt => {
-            if (opt.innerText.trim() !== correctAns.trim() && count < 2) {
-                opt.classList.add("hidden-option");
-                count++;
-            }
-        });
-        document.getElementById("fiftyBtn").disabled = true;
-        document.getElementById("fiftyBtn").style.opacity = "0.5";
-    }
-
-    function useSkip() {
-        submitForm("SKIPPED");
     }
 
     function submitForm(val) {
