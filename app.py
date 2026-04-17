@@ -2,14 +2,25 @@ import os
 import json
 import random
 from flask import Flask, render_template, request, session, redirect, url_for
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
-# Session secure rakhar jonno key
 app.secret_key = os.environ.get("SESSION_SECRET", "quiz-pro-ultra-2026")
+
+# Profile picture save korar jonno path
+UPLOAD_FOLDER = 'static/uploads'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+# Folder na thakle create korbe
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 
 LEADERBOARD_FILE = "leaderboard.json"
 
-# Leaderboard data load korar function
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 def load_leaderboard():
     if not os.path.exists(LEADERBOARD_FILE):
         return []
@@ -19,7 +30,6 @@ def load_leaderboard():
     except (json.JSONDecodeError, IOError):
         return []
 
-# Leaderboard data save korar function
 def save_leaderboard(data):
     try:
         with open(LEADERBOARD_FILE, "w", encoding="utf-8") as f:
@@ -27,6 +37,7 @@ def save_leaderboard(data):
     except IOError:
         pass
 
+# Tomar deya 20 ti proshno ekhane thik rakha hoyeche
 QUESTIONS = [
     {"question": "Who is GOAT of Football?", "options": ["Kustiyar Ronaldo", "Pele", "Hand of GOD", "Leo Messi"], "answer": "Leo Messi", "category": "Sports"},
     {"question": "Who is the father of Real Madrid?", "options": ["Raphinha", "Rice", "Messi", "Lamin Yamal"], "answer": "Messi", "category": "Football"},
@@ -55,8 +66,9 @@ def login():
     if request.method == "POST":
         name = request.form.get("username", "").strip()
         if name:
-            session.clear() # Purono session clear kore notun kore login
+            session.clear()
             session["username"] = name
+            session["profile_pic"] = 'default_avatar.png' # Default picture
             return redirect(url_for("index"))
     return render_template("login.html")
 
@@ -66,31 +78,43 @@ def index():
         return redirect(url_for("login"))
     return render_template("index.html", total=len(QUESTIONS), username=session["username"])
 
+@app.route("/update_profile", methods=["POST"])
+def update_profile():
+    if "username" not in session:
+        return redirect(url_for("login"))
+    
+    # Name Update
+    new_name = request.form.get("username", "").strip()
+    if new_name:
+        session["username"] = new_name
+    
+    # Profile Picture Update
+    if 'profile_pic' in request.files:
+        file = request.files['profile_pic']
+        if file and allowed_file(file.filename):
+            filename = secure_filename(f"user_{session['username']}_{file.filename}")
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            session["profile_pic"] = f"uploads/{filename}"
+            
+    return redirect(url_for("index"))
+
 @app.route("/start")
 def start():
     if "username" not in session:
         return redirect(url_for("login"))
-    
-    # Quiz shuru hoyar somoy shob initialize kora
     session["score"] = 0
     session["current"] = 0
-    
-    # Question order shuffle kora
     indices = list(range(len(QUESTIONS)))
     random.shuffle(indices)
     session["question_order"] = indices
-    
     return redirect(url_for("quiz"))
 
 @app.route("/quiz", methods=["GET", "POST"])
 def quiz():
     if "question_order" not in session:
         return redirect(url_for("start"))
-
     current_step = session["current"]
     total = len(QUESTIONS)
-
-    # Shob question sesh hole result page e jabe
     if current_step >= total:
         return redirect(url_for("result"))
 
@@ -99,54 +123,33 @@ def quiz():
     
     if request.method == "POST":
         selected_answer = request.form.get("answer")
-        
-        # Jodi skip na kora hoy ebong thik hoy tobe score barbe
         if selected_answer != "SKIPPED":
             if selected_answer == question_data["answer"]:
                 session["score"] += 1
-        
-        # Porer question e jaoa
         session["current"] += 1
         return redirect(url_for("quiz"))
 
-    # Options gulo shuffle kora display korar somoy
     display_options = question_data["options"].copy()
     random.shuffle(display_options)
-
-    return render_template("quiz.html", 
-                           question=question_data, 
-                           options=display_options, 
-                           total=total, 
-                           step=current_step + 1)
+    return render_template("quiz.html", question=question_data, options=display_options, total=total, step=current_step + 1)
 
 @app.route("/result", methods=["GET", "POST"])
 def result():
     if "score" not in session:
         return redirect(url_for("index"))
-
     score = session["score"]
     total = len(QUESTIONS)
     percentage = int((score / total) * 100)
     username = session.get("username", "Guest")
 
     if request.method == "POST":
-        # Score leaderboard e save kora
         data = load_leaderboard()
-        data.append({
-            "name": username, 
-            "score": score, 
-            "percentage": percentage
-        })
-        # Score onujayi sort kora (Boro theke chhoto)
+        data.append({"name": username, "score": score, "percentage": percentage})
         data = sorted(data, key=lambda x: x["score"], reverse=True)[:10]
         save_leaderboard(data)
         return redirect(url_for("leaderboard"))
 
-    return render_template("result.html", 
-                           score=score, 
-                           total=total, 
-                           percentage=percentage, 
-                           name=username)
+    return render_template("result.html", score=score, total=total, percentage=percentage, name=username)
 
 @app.route("/leaderboard")
 def leaderboard():
@@ -159,5 +162,4 @@ def logout():
     return redirect(url_for("login"))
 
 if __name__ == "__main__":
-    # App run kora
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=True)
