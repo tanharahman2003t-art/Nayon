@@ -1,103 +1,72 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Quiz</title>
-
-<style>
-body {
-    font-family: 'Segoe UI', sans-serif;
-    background: linear-gradient(135deg, #6c63ff, #8f94fb);
-    margin: 0;
-}
-
-.container {
-    max-width: 500px;
-    margin: 40px auto;
-    background: white;
-    padding: 25px;
-    border-radius: 20px;
-}
-
-.option {
-    padding: 15px;
-    margin-bottom: 10px;
-    border: 2px solid #eee;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.option:hover {
-    border-color: #28a745;
-}
-
-/* Correct */
-.correct {
-    background: #e6ffe6;
-    border-color: #28a745;
-}
-
-/* Wrong */
-.wrong {
-    background: #ffe6e6;
-    border-color: red;
-}
-</style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Master - Live</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #6c63ff, #8f94fb); margin: 0; }
+        .container { max-width: 500px; margin: 40px auto; background: white; padding: 25px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .timer-container { width: 100%; background: #eee; height: 10px; border-radius: 5px; margin-bottom: 20px; overflow: hidden; }
+        .timer-bar { height: 100%; background: #ff4757; width: 100%; transition: width 1s linear; }
+        .info { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: bold; color: #666; }
+        .option { padding: 15px; margin-bottom: 12px; border: 2px solid #eee; border-radius: 15px; cursor: pointer; transition: 0.3s; font-size: 16px; }
+        .option:hover { border-color: #6c63ff; background: #f9f9ff; }
+        .correct { background: #e6ffe6 !important; border-color: #28a745 !important; }
+        .wrong { background: #ffe6e6 !important; border-color: #ff4757 !important; }
+    </style>
 </head>
-
 <body>
 
 <div class="container">
+    <div class="info">
+        <span>Question {{ step }}/{{ total }}</span>
+        <span id="timerText">⏱️ 15s</span>
+    </div>
+    <div class="timer-container"><div class="timer-bar" id="progressBar"></div></div>
 
-<h3>{{ question.question }}</h3>
+    <h3 style="margin-bottom: 25px;">{{ question.question }}</h3>
 
-<form id="quizForm" method="POST">
-
-{% for option in options %}
-<div class="option" onclick="selectAnswer(this, `{{ option }}`)">
-    {{ option }}
-</div>
-{% endfor %}
-
-<input type="hidden" name="answer" id="answerInput">
-
-</form>
-
+    <form id="quizForm" method="POST">
+        {% for option in options %}
+        <div class="option" onclick="selectAnswer(this, `{{ option }}`)">{{ option }}</div>
+        {% endfor %}
+        <input type="hidden" name="answer" id="answerInput">
+    </form>
 </div>
 
 <script>
+    const correctAns = `{{ question.answer }}`;
+    let timeLeft = 15;
+    const progressBar = document.getElementById("progressBar");
+    const timerText = document.getElementById("timerText");
 
-// ✅ FIX: use correct answer directly
-const correct = `{{ question.answer }}`;
+    const timer = setInterval(() => {
+        timeLeft--;
+        timerText.innerText = `⏱️ ${timeLeft}s`;
+        progressBar.style.width = (timeLeft / 15 * 100) + "%";
+        if (timeLeft <= 0) { clearInterval(timer); submitForm("TIMEOUT"); }
+    }, 1000);
 
-function selectAnswer(el, value) {
+    function selectAnswer(el, val) {
+        clearInterval(timer);
+        const options = document.querySelectorAll(".option");
+        options.forEach(opt => opt.style.pointerEvents = "none");
 
-    document.getElementById("answerInput").value = value;
-
-    const options = document.querySelectorAll(".option");
-
-    // disable clicks
-    options.forEach(opt => opt.style.pointerEvents = "none");
-
-    if (value.trim() === correct.trim()) {
-        el.classList.add("correct");   // GREEN
-    } else {
-        el.classList.add("wrong");     // RED
-
-        // highlight correct
-        options.forEach(opt => {
-            if (opt.innerText.trim() === correct.trim()) {
-                opt.classList.add("correct");
-            }
-        });
+        if (val.trim() === correctAns.trim()) {
+            el.classList.add("correct");
+        } else {
+            el.classList.add("wrong");
+            options.forEach(opt => {
+                if(opt.innerText.trim() === correctAns.trim()) opt.classList.add("correct");
+            });
+        }
+        setTimeout(() => submitForm(val), 800);
     }
 
-    setTimeout(() => {
+    function submitForm(val) {
+        document.getElementById("answerInput").value = val;
         document.getElementById("quizForm").submit();
-    }, 800);
-}
+    }
 </script>
-
 </body>
 </html>
