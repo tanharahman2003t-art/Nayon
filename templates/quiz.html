@@ -16,6 +16,7 @@
             min-height: 100vh; display: flex; justify-content: center; align-items: center;
             overflow: hidden; transition: 0.3s;
         }
+        /* ব্যাকগ্রাউন্ড এনিমেশন */
         .blob {
             position: absolute; width: 400px; height: 400px;
             background: linear-gradient(45deg, var(--primary), #4834d4);
@@ -70,20 +71,21 @@
     <div id="audio-unlock" onclick="startEngine()">
         <div style="text-align: center;">
             <h1 style="font-size: 60px;">⚽</h1>
-            <p>Tap to Start Messi Quiz<br><small>(Enables Sound & 10s Timer)</small></p>
+            <p style="margin-top: 10px; font-weight: 600;">Tap to Start Messi Quiz</p>
+            <p style="opacity: 0.7; font-size: 13px;">(Enables Sound & 10s Timer)</p>
         </div>
     </div>
     {% endif %}
 
     <div class="container">
         <div style="display: flex; justify-content: space-between; font-size: 13px; opacity: 0.8;">
-            <span>Q: {{ step }}/{{ total }}</span>
+            <span>Question: {{ step }}/{{ total }}</span>
             <span id="time-text">10s</span>
         </div>
         <div class="timer-track"><div class="timer-bar" id="progressBar"></div></div>
 
         <div class="lifelines">
-            <button id="fiftyBtn" class="life-btn" onclick="useFifty()">✂️ 50:50 (<span id="lifeCount">{{ lifelines }}</span>)</button>
+            <button id="fiftyBtn" class="life-btn" onclick="useFifty()">✂️ 50:50 (Left: <span id="lifeCount">{{ lifelines }}</span>)</button>
             <button id="skipBtn" class="life-btn" onclick="useSkip()">⏭️ Skip</button>
         </div>
 
@@ -107,6 +109,7 @@
         let isEngineStarted = {{ 'false' if step == 1 else 'true' }};
         let lifelineRemaining = {{ lifelines }};
 
+        // যদি ৫০:৫০ শেষ হয়ে যায় তবে বাটন অফ থাকবে
         if(lifelineRemaining <= 0) document.getElementById('fiftyBtn').disabled = true;
 
         function startEngine() {
@@ -115,15 +118,20 @@
             isEngineStarted = true;
         }
 
+        // টাইমার লজিক
         const timer = setInterval(() => {
             if(isEngineStarted && !isAnswered) {
                 timeLeft--;
                 document.getElementById('time-text').innerText = timeLeft + "s";
                 document.getElementById('progressBar').style.width = (timeLeft / 10 * 100) + "%";
-                if(timeLeft <= 0) { clearInterval(timer); submitForm("TIMEOUT"); }
+                if(timeLeft <= 0) { 
+                    clearInterval(timer); 
+                    submitForm("TIMEOUT"); 
+                }
             }
         }, 1000);
 
+        // উত্তর দেওয়ার লজিক
         function handleAnswer(el, val) {
             if(!isEngineStarted || isAnswered) return;
             isAnswered = true;
@@ -137,34 +145,39 @@
             } else {
                 el.classList.add('wrong');
                 document.getElementById('snd_no').play();
-                opts.forEach(o => { if(o.innerText.trim() === correctAns.trim()) o.classList.add('correct'); });
+                opts.forEach(o => { 
+                    if(o.innerText.trim() === correctAns.trim()) o.classList.add('correct'); 
+                });
             }
             setTimeout(() => submitForm(val), 800);
         }
 
+        // ৫০:৫০ লাইফলাইন লজিক
         async function useFifty() {
             if(lifelineRemaining <= 0 || isAnswered) return;
             
-            let response = await fetch('/quiz', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                body: new URLSearchParams({'answer': 'USE_FIFTY'})
-            });
-            let result = await response.json();
-
-            if(result.status === "ok") {
-                lifelineRemaining = result.remaining;
-                document.getElementById('lifeCount').innerText = lifelineRemaining;
-                if(lifelineRemaining <= 0) document.getElementById('fiftyBtn').disabled = true;
-                
-                let hiddenCount = 0;
-                document.querySelectorAll('.option').forEach(o => {
-                    if(o.innerText.trim() !== correctAns.trim() && hiddenCount < 2) {
-                        o.style.visibility = 'hidden'; hiddenCount++;
-                    }
+            try {
+                let response = await fetch('/quiz', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: new URLSearchParams({'answer': 'USE_FIFTY'})
                 });
-                document.getElementById('fiftyBtn').disabled = true; 
-            }
+                let result = await response.json();
+
+                if(result.status === "ok") {
+                    lifelineRemaining = result.remaining;
+                    document.getElementById('lifeCount').innerText = lifelineRemaining;
+                    
+                    let hiddenCount = 0;
+                    document.querySelectorAll('.option').forEach(o => {
+                        if(o.innerText.trim() !== correctAns.trim() && hiddenCount < 2) {
+                            o.style.visibility = 'hidden'; 
+                            hiddenCount++;
+                        }
+                    });
+                    document.getElementById('fiftyBtn').disabled = true; 
+                }
+            } catch (e) { console.log("Error using lifeline"); }
         }
 
         function useSkip() { submitForm("SKIPPED"); }
