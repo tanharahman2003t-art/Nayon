@@ -1,62 +1,178 @@
-<div class="lifelines">
-    <button id="fiftyBtn" class="life-btn" onclick="useFifty()">✂️ 50:50 (Left: <span id="lifeCount">{{ lifelines }}</span>)</button>
-    <button id="skipBtn" class="life-btn" onclick="useSkip()">⏭️ Skip</button>
-</div>
-
-<script>
-    const correctAns = `{{ question.answer }}`;
-    let timeLeft = 10; // টাইমার ১০ সেকেন্ড করা হলো
-    let isAnswered = false;
-    let lifelineRemaining = {{ lifelines }};
-
-    if(lifelineRemaining <= 0) document.getElementById('fiftyBtn').disabled = true;
-
-    // টাইমার ফাংশন
-    const timer = setInterval(() => {
-        if(!isAnswered) {
-            timeLeft--;
-            document.getElementById('time-text').innerText = timeLeft + "s";
-            document.getElementById('progressBar').style.width = (timeLeft / 10 * 100) + "%";
-            if(timeLeft <= 0) { clearInterval(timer); submitForm("TIMEOUT"); }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Pro | Messi Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6c63ff; --secondary: #ff4757; --success: #00d2d3;
+            --bg: #0f172a; --card-bg: rgba(30, 41, 59, 0.85); --text: #f8fafc;
         }
-    }, 1000);
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        body {
+            background: var(--bg); color: var(--text);
+            min-height: 100vh; display: flex; justify-content: center; align-items: center;
+            overflow: hidden; transition: 0.3s;
+        }
+        .blob {
+            position: absolute; width: 400px; height: 400px;
+            background: linear-gradient(45deg, var(--primary), #4834d4);
+            filter: blur(100px); border-radius: 50%; z-index: -1; opacity: 0.2;
+            animation: float 15s infinite alternate;
+        }
+        @keyframes float { from { transform: translate(-10%, -10%); } to { transform: translate(10%, 10%); } }
 
-    // ৫০:৫০ লজিক
-    async def useFifty() {
-        if(lifelineRemaining <= 0) return;
+        .container {
+            width: 92%; max-width: 450px; background: var(--card-bg);
+            backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 30px; border-radius: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            animation: slideIn 0.4s ease-out;
+        }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        .timer-track { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; margin: 15px 0; overflow: hidden; }
+        .timer-bar { height: 100%; width: 100%; background: var(--primary); transition: width 1s linear; }
+
+        .lifelines { display: flex; gap: 10px; margin-bottom: 20px; }
+        .life-btn {
+            flex: 1; padding: 10px; border: none; border-radius: 12px;
+            background: rgba(108, 99, 255, 0.15); color: var(--primary);
+            font-weight: 600; cursor: pointer; border: 1px solid rgba(108,99,255,0.2);
+            transition: 0.3s;
+        }
+        .life-btn:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(1); }
+
+        .option {
+            padding: 15px 20px; margin-bottom: 12px;
+            background: rgba(255, 255, 255, 0.05); border: 2px solid transparent;
+            border-radius: 16px; cursor: pointer; transition: 0.2s;
+        }
+        .option:hover { background: rgba(108, 99, 255, 0.1); border-color: var(--primary); }
+        .correct { background: var(--success) !important; color: #000 !important; font-weight: bold; transform: scale(1.02); }
+        .wrong { background: var(--secondary) !important; color: #fff !important; animation: shake 0.3s; }
         
-        // ব্যাকএন্ডে কাউন্ট কমানোর জন্য কল করা (অপশনাল কিন্তু সিকিউর)
-        let response = await fetch('/quiz', {
-            method: 'POST',
-            body: new URLSearchParams({'answer': 'USE_FIFTY'})
-        });
-        let result = await response.json();
-
-        if(result.status === "ok") {
-            lifelineRemaining = result.remaining;
-            document.getElementById('lifeCount').innerText = lifelineRemaining;
-            
-            let hiddenCount = 0;
-            const options = document.querySelectorAll('.option');
-            options.forEach(o => {
-                if(o.innerText.trim() !== correctAns.trim() && hiddenCount < 2) {
-                    o.style.visibility = 'hidden';
-                    hiddenCount++;
-                }
-            });
-            document.getElementById('fiftyBtn').disabled = true; // এই প্রশ্নের জন্য শেষ
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+        
+        #audio-unlock {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 9999;
+            display: flex; justify-content: center; align-items: center; color: white; cursor: pointer;
         }
-    }
+    </style>
+</head>
+<body>
 
-    function handleAnswer(el, val) {
-        if(isAnswered) return;
-        isAnswered = true;
-        // ... (বাকি এনিমেশন কোড আপনার আগের মতোই থাকবে)
-        setTimeout(() => submitForm(val), 800);
-    }
+    <div class="blob"></div>
 
-    function submitForm(val) {
-        document.getElementById('answerInput').value = val;
-        document.getElementById('quizForm').submit();
-    }
-</script>
+    {% if step == 1 %}
+    <div id="audio-unlock" onclick="startEngine()">
+        <div style="text-align: center;">
+            <h1 style="font-size: 60px;">⚽</h1>
+            <p>Tap to Start Messi Quiz<br><small>(Enables Sound & 10s Timer)</small></p>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; font-size: 13px; opacity: 0.8;">
+            <span>Q: {{ step }}/{{ total }}</span>
+            <span id="time-text">10s</span>
+        </div>
+        <div class="timer-track"><div class="timer-bar" id="progressBar"></div></div>
+
+        <div class="lifelines">
+            <button id="fiftyBtn" class="life-btn" onclick="useFifty()">✂️ 50:50 (<span id="lifeCount">{{ lifelines }}</span>)</button>
+            <button id="skipBtn" class="life-btn" onclick="useSkip()">⏭️ Skip</button>
+        </div>
+
+        <h3 style="margin-bottom: 20px;">{{ question.question }}</h3>
+
+        <form id="quizForm" method="POST">
+            {% for option in options %}
+            <div class="option" onclick="handleAnswer(this, `{{ option }}`)">{{ option }}</div>
+            {% endfor %}
+            <input type="hidden" name="answer" id="answerInput">
+        </form>
+    </div>
+
+    <audio id="snd_ok" src="https://www.soundjay.com/buttons/sounds/button-37.mp3"></audio>
+    <audio id="snd_no" src="https://www.soundjay.com/buttons/sounds/button-10.mp3"></audio>
+
+    <script>
+        const correctAns = `{{ question.answer }}`;
+        let timeLeft = 10;
+        let isAnswered = false;
+        let isEngineStarted = {{ 'false' if step == 1 else 'true' }};
+        let lifelineRemaining = {{ lifelines }};
+
+        if(lifelineRemaining <= 0) document.getElementById('fiftyBtn').disabled = true;
+
+        function startEngine() {
+            document.getElementById('audio-unlock').style.display = 'none';
+            document.getElementById('snd_ok').play(); document.getElementById('snd_ok').pause();
+            isEngineStarted = true;
+        }
+
+        const timer = setInterval(() => {
+            if(isEngineStarted && !isAnswered) {
+                timeLeft--;
+                document.getElementById('time-text').innerText = timeLeft + "s";
+                document.getElementById('progressBar').style.width = (timeLeft / 10 * 100) + "%";
+                if(timeLeft <= 0) { clearInterval(timer); submitForm("TIMEOUT"); }
+            }
+        }, 1000);
+
+        function handleAnswer(el, val) {
+            if(!isEngineStarted || isAnswered) return;
+            isAnswered = true;
+
+            const opts = document.querySelectorAll('.option');
+            opts.forEach(o => o.style.pointerEvents = 'none');
+
+            if (val.trim() === correctAns.trim()) {
+                el.classList.add('correct');
+                document.getElementById('snd_ok').play();
+            } else {
+                el.classList.add('wrong');
+                document.getElementById('snd_no').play();
+                opts.forEach(o => { if(o.innerText.trim() === correctAns.trim()) o.classList.add('correct'); });
+            }
+            setTimeout(() => submitForm(val), 800);
+        }
+
+        async function useFifty() {
+            if(lifelineRemaining <= 0 || isAnswered) return;
+            
+            let response = await fetch('/quiz', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: new URLSearchParams({'answer': 'USE_FIFTY'})
+            });
+            let result = await response.json();
+
+            if(result.status === "ok") {
+                lifelineRemaining = result.remaining;
+                document.getElementById('lifeCount').innerText = lifelineRemaining;
+                if(lifelineRemaining <= 0) document.getElementById('fiftyBtn').disabled = true;
+                
+                let hiddenCount = 0;
+                document.querySelectorAll('.option').forEach(o => {
+                    if(o.innerText.trim() !== correctAns.trim() && hiddenCount < 2) {
+                        o.style.visibility = 'hidden'; hiddenCount++;
+                    }
+                });
+                document.getElementById('fiftyBtn').disabled = true; 
+            }
+        }
+
+        function useSkip() { submitForm("SKIPPED"); }
+
+        function submitForm(val) {
+            document.getElementById('answerInput').value = val;
+            document.getElementById('quizForm').submit();
+        }
+    </script>
+</body>
+</html>
