@@ -3,121 +3,275 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz Master - Home</title>
+    <title>Quiz Pro | Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* CSS Variables for Dark Mode */
         :root {
-            --bg-color: #f5f6fb;
-            --card-bg: white;
-            --text-color: #333;
             --primary: #6c63ff;
+            --secondary: #ff4757;
+            --bg: #f4f7fe;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --text: #2d3436;
+            --shadow: 0 10px 30px rgba(0,0,0,0.08);
         }
 
         [data-theme="dark"] {
-            --bg-color: #1a1a2e;
-            --card-bg: #16213e;
-            --text-color: #e9ecef;
+            --bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.8);
+            --text: #f8fafc;
+            --shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
 
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-color); color: var(--text-color); margin: 0; transition: 0.3s; }
-        
-        /* Sidebar Styles */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            transition: all 0.4s ease;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Modern Navbar */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 5%;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow);
+        }
+
+        .logo { font-size: 24px; font-weight: 700; color: var(--primary); letter-spacing: 1px; }
+
+        .user-profile-nav {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            padding: 5px 15px;
+            border-radius: 50px;
+            background: rgba(108, 99, 255, 0.1);
+            transition: 0.3s;
+        }
+
+        .user-profile-nav img {
+            width: 35px; height: 35px; border-radius: 50%; object-fit: cover;
+            border: 2px solid var(--primary);
+        }
+
+        /* Sidebar Settings */
         .sidebar {
-            position: fixed; right: -300px; top: 0; width: 280px; height: 100%;
-            background: var(--card-bg); box-shadow: -5px 0 15px rgba(0,0,0,0.1);
-            transition: 0.4s; z-index: 1000; padding: 20px;
+            position: fixed; right: -350px; top: 0; width: 320px; height: 100%;
+            background: var(--card-bg); backdrop-filter: blur(20px);
+            box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+            transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1001; padding: 40px 30px;
         }
-        .sidebar.active { right: 0; }
-        
-        .profile-circle {
-            width: 80px; height: 80px; border-radius: 50%; background: #ddd;
-            margin: 10px auto; overflow: hidden; border: 3px solid var(--primary);
-        }
-        .profile-circle img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* General UI */
-        .container { padding: 50px 20px; text-align: center; }
-        .settings-icon { position: absolute; top: 20px; right: 20px; font-size: 30px; cursor: pointer; }
-        .btn { background: var(--primary); color: white; padding: 12px 25px; border-radius: 10px; border:none; cursor:pointer; font-weight:bold; width: 100%; margin-top: 10px; }
-        .input-group { margin-bottom: 15px; text-align: left; }
-        .input-group input { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ddd; box-sizing: border-box; }
-        
-        .dark-mode-toggle { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding: 10px; background: #eee; border-radius: 10px; color: #333; }
+        .sidebar.active { right: 0; }
+
+        .sidebar-header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;
+        }
+
+        .profile-edit-area { text-align: center; margin-bottom: 30px; }
+
+        .profile-preview {
+            width: 100px; height: 100px; border-radius: 50%;
+            margin: 0 auto 15px; border: 4px solid var(--primary);
+            overflow: hidden; position: relative;
+        }
+
+        .profile-preview img { width: 100%; height: 100%; object-fit: cover; }
+
+        .file-input { display: none; }
+        .file-label {
+            font-size: 12px; color: var(--primary); cursor: pointer; text-decoration: underline;
+        }
+
+        /* Dashboard Content */
+        .hero {
+            text-align: center; padding: 60px 5%;
+        }
+
+        .hero h1 { font-size: 3rem; margin-bottom: 10px; background: linear-gradient(to right, var(--primary), #a29bfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px; padding: 20px 5%;
+        }
+
+        .stat-card {
+            background: var(--card-bg); padding: 30px; border-radius: 24px;
+            text-align: center; box-shadow: var(--shadow);
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: 0.3s;
+        }
+
+        .stat-card:hover { transform: translateY(-10px); }
+
+        .stat-card h2 { font-size: 32px; color: var(--primary); }
+
+        /* Buttons & Inputs */
+        .main-btn {
+            background: var(--primary); color: white; border: none;
+            padding: 16px 40px; border-radius: 16px; font-weight: 600;
+            font-size: 18px; cursor: pointer; transition: 0.3s;
+            box-shadow: 0 10px 20px rgba(108, 99, 255, 0.3);
+            margin-top: 30px;
+        }
+
+        .main-btn:hover { transform: scale(1.05); box-shadow: 0 15px 25px rgba(108, 99, 255, 0.4); }
+
+        .input-field {
+            width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #ddd;
+            background: transparent; color: var(--text); margin-top: 8px;
+        }
+
+        .toggle-row {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd;
+        }
+
+        /* Dark Mode Switch */
+        .switch {
+            position: relative; display: inline-block; width: 50px; height: 24px;
+        }
+
+        .switch input { opacity: 0; width: 0; height: 0; }
+
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc; transition: .4s; border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 3px;
+            background-color: white; transition: .4s; border-radius: 50%;
+        }
+
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(26px); }
+
+        .overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4); z-index: 1000;
+        }
+        .overlay.active { display: block; }
     </style>
 </head>
 <body>
 
-    <div class="settings-icon" onclick="toggleSidebar()">⚙️</div>
+    <div class="overlay" onclick="toggleSidebar()"></div>
+
+    <nav class="navbar">
+        <div class="logo">QUIZPRO.</div>
+        <div class="user-profile-nav" onclick="toggleSidebar()">
+            <span>{{ username }}</span>
+            <img src="{{ url_for('static', filename=session.get('profile_pic', 'default_avatar.png')) }}" id="nav-avatar">
+        </div>
+    </nav>
 
     <div class="sidebar" id="sidebar">
-        <h3 onclick="toggleSidebar()" style="cursor:pointer;">✖ Close</h3>
-        <div class="profile-circle">
-            <img src="{{ url_for('static', filename=session.get('profile_pic', 'default_avatar.png')) }}" id="preview">
+        <div class="sidebar-header">
+            <h3>Settings</h3>
+            <span onclick="toggleSidebar()" style="cursor:pointer; font-size: 24px;">×</span>
         </div>
-        
+
+        <div class="profile-edit-area">
+            <div class="profile-preview">
+                <img src="{{ url_for('static', filename=session.get('profile_pic', 'default_avatar.png')) }}" id="sidebar-preview">
+            </div>
+            <label for="profile_pic" class="file-label">Change Profile Photo</label>
+        </div>
+
         <form action="/update_profile" method="POST" enctype="multipart/form-data">
-            <div class="input-group">
-                <label>Change Name:</label>
-                <input type="text" name="username" value="{{ username }}">
+            <input type="file" name="profile_pic" id="profile_pic" class="file-input" onchange="previewFile()">
+            
+            <div style="margin-bottom: 20px;">
+                <label style="font-size: 13px; opacity: 0.7;">Display Name</label>
+                <input type="text" name="username" class="input-field" value="{{ username }}">
             </div>
-            <div class="input-group">
-                <label>Change Photo:</label>
-                <input type="file" name="profile_pic" onchange="previewImage(this)">
-            </div>
-            <button type="submit" class="btn">Save Settings</button>
+
+            <button type="submit" class="main-btn" style="width: 100%; padding: 12px;">Save Changes</button>
         </form>
 
-        <div class="dark-mode-toggle">
+        <div class="toggle-row">
             <span>Dark Mode</span>
-            <input type="checkbox" id="darkModeCheckbox" onchange="toggleDarkMode()">
+            <label class="switch">
+                <input type="checkbox" id="theme-switch" onchange="switchTheme()">
+                <span class="slider"></span>
+            </label>
         </div>
+
+        <a href="/logout" style="display: block; margin-top: 40px; color: var(--secondary); text-decoration: none; font-weight: 600;">Logout</a>
     </div>
 
-    <div class="container">
-        <h1>Welcome, {{ username }}!</h1>
-        <div class="cards">
-            <p>Ready to start the quiz?</p>
+    <div class="hero">
+        <h1>Welcome Back, {{ username }}!</h1>
+        <p>Your journey to become a Master Quizzer starts here.</p>
+        <button class="main-btn" onclick="location.href='/start'">🚀 Start New Session</button>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <p>Questions Available</p>
+            <h2>{{ total }}</h2>
         </div>
-        <a href="/start" style="text-decoration:none;"><button class="btn" style="width:200px">🚀 Start Quiz</button></a>
+        <div class="stat-card">
+            <p>Time Limit</p>
+            <h2>15s</h2>
+        </div>
+        <div class="stat-card">
+            <p>Top Rank</p>
+            <h2>#1</h2>
+        </div>
     </div>
 
     <script>
-        // Sidebar Toggle
         function toggleSidebar() {
-            document.getElementById("sidebar").classList.toggle("active");
+            document.getElementById('sidebar').classList.toggle('active');
+            document.querySelector('.overlay').classList.toggle('active');
         }
 
-        // Image Preview
-        function previewImage(input) {
-            if (input.files && input.files[0]) {
-                var reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('preview').src = e.target.result;
-                }
-                reader.readAsDataURL(input.files[0]);
+        function previewFile() {
+            const preview = document.getElementById('sidebar-preview');
+            const file = document.getElementById('profile_pic').files[0];
+            const reader = new FileReader();
+
+            reader.onloadend = function () {
+                preview.src = reader.result;
+            }
+
+            if (file) {
+                reader.readAsDataURL(file);
             }
         }
 
-        // Dark Mode Logic
-        function toggleDarkMode() {
-            const isDark = document.getElementById("darkModeCheckbox").checked;
+        function switchTheme() {
+            const isDark = document.getElementById('theme-switch').checked;
             if (isDark) {
-                document.documentElement.setAttribute("data-theme", "dark");
-                localStorage.setItem("theme", "dark");
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
             } else {
-                document.documentElement.setAttribute("data-theme", "light");
-                localStorage.setItem("theme", "light");
+                document.documentElement.setAttribute('data-theme', 'light');
+                localStorage.setItem('theme', 'light');
             }
         }
 
-        // Load Theme on Start
+        // Initialize Theme
         window.onload = () => {
-            const savedTheme = localStorage.getItem("theme");
-            if (savedTheme === "dark") {
-                document.documentElement.setAttribute("data-theme", "dark");
-                document.getElementById("darkModeCheckbox").checked = true;
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                document.getElementById('theme-switch').checked = true;
             }
-        };
+        }
     </script>
 </body>
 </html>
