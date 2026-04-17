@@ -2,19 +2,16 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz Master - Pro</title>
+    <title>Quiz Master - Sound Fix</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #6c63ff, #8f94fb); margin: 0; }
         .container { max-width: 500px; margin: 20px auto; background: white; padding: 25px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); position: relative; }
         .timer-container { width: 100%; background: #eee; height: 10px; border-radius: 5px; margin-bottom: 20px; overflow: hidden; }
         .timer-bar { height: 100%; background: #ff4757; width: 100%; transition: width 1s linear; }
         .info { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: bold; color: #666; }
-        
-        /* Lifeline Styles */
         .lifelines { display: flex; gap: 10px; margin-bottom: 20px; justify-content: center; }
         .life-btn { background: #ff9f43; color: white; border: none; padding: 8px 15px; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 14px; }
         .life-btn:disabled { background: #ccc; cursor: not-allowed; }
-
         .option { padding: 15px; margin-bottom: 12px; border: 2px solid #eee; border-radius: 15px; cursor: pointer; transition: 0.3s; font-size: 16px; background: white; }
         .option:hover { border-color: #6c63ff; background: #f9f9ff; }
         .correct { background: #e6ffe6 !important; border-color: #28a745 !important; }
@@ -24,9 +21,15 @@
 </head>
 <body>
 
-<audio id="correctSound" src="https://cdn.pixabay.com/audio/2021/08/04/audio_bb630692f3.mp3"></audio>
-<audio id="wrongSound" src="https://cdn.pixabay.com/audio/2022/03/10/audio_c9725f02f4.mp3"></audio>
-<audio id="tickSound" src="https://www.soundjay.com/clock/sounds/clock-ticking-2.mp3"></audio>
+<audio id="correctSound" preload="auto">
+    <source src="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3" type="audio/mpeg">
+</audio>
+<audio id="wrongSound" preload="auto">
+    <source src="https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3" type="audio/mpeg">
+</audio>
+<audio id="tickSound" preload="auto">
+    <source src="https://assets.mixkit.co/active_storage/sfx/2020/2020-preview.mp3" type="audio/mpeg">
+</audio>
 
 <div class="container">
     <div class="info">
@@ -40,7 +43,7 @@
         <button id="skipBtn" class="life-btn" onclick="useSkip()">⏭️ Skip</button>
     </div>
 
-    <h3 id="questionText">{{ question.question }}</h3>
+    <h3>{{ question.question }}</h3>
 
     <form id="quizForm" method="POST">
         <div id="optionsContainer">
@@ -63,13 +66,21 @@
     const sndWrong = document.getElementById("wrongSound");
     const sndTick = document.getElementById("tickSound");
 
-    // Timer Logic
+    // Important: Force sound load
+    window.addEventListener('click', () => {
+        sndCorrect.load();
+        sndWrong.load();
+        sndTick.load();
+    }, { once: true });
+
     const timer = setInterval(() => {
         timeLeft--;
         timerText.innerText = `⏱️ ${timeLeft}s`;
         progressBar.style.width = (timeLeft / 15 * 100) + "%";
         
-        if(timeLeft <= 5) { sndTick.play(); } // Tick sound in last 5s
+        if(timeLeft <= 3 && timeLeft > 0) { 
+            sndTick.play().catch(e => console.log("Sound block")); 
+        }
 
         if (timeLeft <= 0) { 
             clearInterval(timer); 
@@ -83,10 +94,10 @@
         options.forEach(opt => opt.style.pointerEvents = "none");
 
         if (val.trim() === correctAns.trim()) {
-            sndCorrect.play();
+            sndCorrect.play().catch(e => console.log("Sound block"));
             el.classList.add("correct");
         } else {
-            sndWrong.play();
+            sndWrong.play().catch(e => console.log("Sound block"));
             el.classList.add("wrong");
             options.forEach(opt => {
                 if(opt.innerText.trim() === correctAns.trim()) opt.classList.add("correct");
@@ -95,7 +106,6 @@
         setTimeout(() => submitForm(val), 1000);
     }
 
-    // Lifeline: 50-50
     function useFiftyFifty() {
         const options = Array.from(document.querySelectorAll(".option"));
         let removed = 0;
@@ -106,10 +116,8 @@
             }
         });
         document.getElementById("fiftyBtn").disabled = true;
-        document.getElementById("fiftyBtn").style.background = "#ccc";
     }
 
-    // Lifeline: Skip
     function useSkip() {
         clearInterval(timer);
         document.getElementById("skipBtn").disabled = true;
